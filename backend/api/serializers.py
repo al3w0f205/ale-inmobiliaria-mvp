@@ -40,10 +40,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    broker_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
     
     class Meta:
         model = User
-        fields = ['username', 'password', 'email', 'user_type', 'phone_number']
+        fields = ['username', 'password', 'email', 'user_type', 'phone_number', 'broker_code']
+        
+    def validate(self, attrs):
+        user_type = attrs.get('user_type', User.IS_CLIENT)
+        if user_type == User.IS_BROKER:
+            broker_code = attrs.get('broker_code', '')
+            if broker_code != 'VIP2026':
+                raise serializers.ValidationError({"broker_code": "Código de invitación de corredor inválido o faltante."})
+        return attrs
         
     def create(self, validated_data):
         user = User.objects.create_user(

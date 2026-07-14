@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('client');
+  const [brokerCode, setBrokerCode] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
@@ -24,7 +25,8 @@ export default function RegisterPage() {
           username, 
           email, 
           password, 
-          user_type: userType 
+          user_type: userType,
+          broker_code: brokerCode
         })
       });
       
@@ -109,6 +111,19 @@ export default function RegisterPage() {
               <option value="broker">Corredor (Publico Propiedades)</option>
             </select>
           </div>
+          {userType === 'broker' && (
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="block text-sm font-medium text-brand mb-1">Código de Invitación (Corredores)</label>
+              <input 
+                type="text" 
+                value={brokerCode}
+                onChange={(e) => setBrokerCode(e.target.value)}
+                placeholder="Ej. VIP2026"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand/50 bg-brand/5 focus:ring-2 focus:ring-brand/30 outline-none" 
+                required
+              />
+            </div>
+          )}
           <button type="submit" className="w-full py-2.5 rounded-xl bg-brand text-white font-semibold hover:bg-brand-hover transition-colors">
             Registrar
           </button>
