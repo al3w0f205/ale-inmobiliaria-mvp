@@ -118,7 +118,7 @@ export default function RegisterPage() {
                 type="text" 
                 value={brokerCode}
                 onChange={(e) => setBrokerCode(e.target.value)}
-                placeholder="Ej. VIP2026"
+                placeholder="Ej. BROKER-123"
                 className="w-full px-4 py-2.5 rounded-xl border border-brand/50 bg-brand/5 focus:ring-2 focus:ring-brand/30 outline-none" 
                 required
               />
