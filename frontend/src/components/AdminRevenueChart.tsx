@@ -11,7 +11,7 @@ export default function AdminRevenueChart() {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/chart_data/`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/chart_data`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

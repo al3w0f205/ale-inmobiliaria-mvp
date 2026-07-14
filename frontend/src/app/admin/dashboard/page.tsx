@@ -21,7 +21,7 @@ export default function AdminDashboardPage() {
           return;
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/stats/`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/stats`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
