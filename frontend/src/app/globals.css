@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --font-sans: var(--font-inter);
+  
+  --bg: oklch(0.99 0.005 250);
+  --surface: oklch(1 0 0);
+  --surface-hover: oklch(0.97 0.01 250);
+  --border: oklch(0.92 0.015 250);
+  
+  --foreground: oklch(0.20 0.02 250);
+  --muted: oklch(0.55 0.02 250);
+  
+  --brand: oklch(0.55 0.18 260); /* Vibrant modern indigo */
+  --brand-hover: oklch(0.48 0.18 260);
+  --brand-light: oklch(0.95 0.04 260);
+  
+  --accent: oklch(0.65 0.18 20); /* Vibrant terracotta / orange for contrast */
+}
+
+.dark {
+  --bg: oklch(0.10 0.01 250);
+  --surface: oklch(0.14 0.01 250);
+  --surface-hover: oklch(0.18 0.01 250);
+  --border: oklch(0.22 0.01 250);
+  
+  --foreground: oklch(0.96 0.01 250);
+  --muted: oklch(0.65 0.01 250);
+  
+  --brand: oklch(0.65 0.18 260); 
+  --brand-hover: oklch(0.70 0.18 260);
+  --brand-light: oklch(0.25 0.10 260);
+  
+  --accent: oklch(0.65 0.18 20);
+}
+
+@theme {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-light: var(--brand-light);
+  
+  --color-accent: var(--accent);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Base resets for typography */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Custom Utilities for glassmorphism */
+@utility glass {
+  background: color-mix(in oklch, var(--color-surface) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}

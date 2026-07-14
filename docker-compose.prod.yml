@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.4-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-marketplace}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+    # Se reemplaza runserver por gunicorn para producción
+    command: sh -c "pip install gunicorn && python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+    # No exponemos puertos directamente, Coolify se encarga del proxy
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-marketplace}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - REDIS_URL=redis://redis:6379/0
+      - PAYPHONE_TOKEN=${PAYPHONE_TOKEN:-""}
+      - DEBUG=False
+      - ALLOWED_HOSTS=*  # Coolify Proxy maneja la seguridad del host
+      - CORS_ALLOW_ALL_ORIGINS=True
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+    # En producción compilamos antes de iniciar el servidor Node
+    command: sh -c "npm install && npm run build && npm start"
+    # El proxy inverso de Coolify escuchará en este puerto
+    labels:
+      - "coolify.proxy.port=3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+      - INTERNAL_API_URL=http://backend:8000/api
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:

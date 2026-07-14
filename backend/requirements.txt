@@ -1,0 +1,12 @@
+Django>=4.2,<5.0
+djangorestframework
+djangorestframework-gis
+psycopg2-binary
+channels
+channels-redis
+daphne
+python-dotenv
+requests
+django-cors-headers
+djangorestframework-simplejwt
+Pillow
