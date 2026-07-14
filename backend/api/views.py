@@ -9,6 +9,10 @@ import os
 import requests
 from django.contrib.auth import get_user_model
 from rest_framework.generics import CreateAPIView
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
+from datetime import timedelta
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -83,8 +87,33 @@ class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Admins can see all payments
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return self.queryset.order_by('-created_at')
         # Users only see their own payments
-        return self.queryset.filter(broker=self.request.user)
+        return self.queryset.filter(broker=self.request.user).order_by('-created_at')
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def approve(self, request, pk=None):
+        payment = self.get_object()
+        if payment.status != 'APPROVED':
+            payment.status = 'APPROVED'
+            payment.save()
+            # Activate subscription
+            sub, _ = Subscription.objects.get_or_create(broker=payment.broker)
+            sub.is_active = True
+            sub.save()
+            return Response({'status': 'Approved'})
+        return Response({'status': 'Already approved'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def reject(self, request, pk=None):
+        payment = self.get_object()
+        if payment.status != 'REJECTED':
+            payment.status = 'REJECTED'
+            payment.save()
+            return Response({'status': 'Rejected'})
+        return Response({'status': 'Already rejected'}, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, serializer):
         serializer.save(broker=self.request.user)
@@ -155,3 +184,45 @@ def create_payment(request):
         'clientTxId': payment.id,
         'amount': int(payment.amount * 100), # PayPhone expects cents
     })
+
+class AdminDashboardViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAdminUser]
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        total_revenue = Payment.objects.filter(status='APPROVED').aggregate(total=Sum('amount'))['total'] or 0
+        total_brokers = User.objects.filter(user_type=User.IS_BROKER).count()
+        total_clients = User.objects.filter(user_type=User.IS_CLIENT).count()
+        active_subscriptions = Subscription.objects.filter(is_active=True).count()
+        published_properties = Property.objects.filter(is_published=True).count()
+        pending_payments = Payment.objects.filter(status='PENDING').count()
+
+        return Response({
+            'total_revenue': total_revenue,
+            'total_brokers': total_brokers,
+            'total_clients': total_clients,
+            'active_subscriptions': active_subscriptions,
+            'published_properties': published_properties,
+            'pending_payments': pending_payments,
+        })
+
+    @action(detail=False, methods=['get'])
+    def chart_data(self, request):
+        # Get last 30 days of payments
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        daily_revenue = Payment.objects.filter(
+            status='APPROVED',
+            created_at__gte=thirty_days_ago
+        ).annotate(
+            date=TruncDate('created_at')
+        ).values('date').annotate(
+            revenue=Sum('amount')
+        ).order_by('date')
+
+        # Format for recharts
+        chart_data = [
+            {'date': item['date'].strftime('%d %b'), 'revenue': float(item['revenue'])}
+            for item in daily_revenue
+        ]
+
+        return Response(chart_data)
