@@ -51,39 +51,17 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-brand/20 selection:text-brand">
-      <Header />
+    <div className="w-full h-[800px] flex flex-col bg-surface border border-border shadow-2xl shadow-brand/5 rounded-3xl overflow-hidden relative">
+      <header className="px-8 py-6 border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-10">
+        <h1 className="text-2xl font-bold mb-1">Centro de Mensajes</h1>
+        <p className="text-muted text-sm font-medium">Chat en vivo con clientes potenciales.</p>
+      </header>
 
-      <div className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 flex flex-col md:flex-row gap-10">
-        
-        {/* Sidebar Nav */}
-        <aside className="w-full md:w-64 flex-shrink-0 space-y-2">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/10 transition-colors text-muted">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            Resumen
-          </Link>
-          <Link href="/dashboard/properties" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/10 transition-colors text-muted">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            Mis Propiedades
-          </Link>
-          <Link href="/dashboard/messages" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/10 text-brand font-semibold transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            Mensajes
-          </Link>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1">
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Bandeja de Entrada</h1>
-            <p className="text-muted">Revisa las consultas de tus prospectos.</p>
-          </header>
-
-          <div className="bg-surface border border-border shadow-2xl shadow-brand/5 rounded-3xl overflow-hidden min-h-[500px]">
-            {loading ? (
-              <div className="p-10 text-center text-muted animate-pulse">
-                Cargando mensajes...
-              </div>
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-muted font-medium animate-pulse">
+            Sincronizando mensajes...
+          </div>
             ) : messages.length === 0 ? (
               <div className="p-20 text-center flex flex-col items-center">
                 <div className="w-16 h-16 bg-muted/10 rounded-full flex items-center justify-center mb-4 text-muted">
@@ -94,42 +72,42 @@ export default function MessagesPage() {
                   Cuando los clientes interesados te envíen un mensaje interno, aparecerá aquí.
                 </p>
               </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
-                    className={`p-6 transition-colors ${msg.is_read ? 'bg-transparent hover:bg-muted/5' : 'bg-brand/5 hover:bg-brand/10'}`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center font-bold">
-                          {msg.sender_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-semibold">{msg.sender_name}</p>
-                          <p className="text-xs text-muted">{new Date(msg.timestamp).toLocaleString()}</p>
-                        </div>
+            <div className="flex flex-col">
+              {messages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={`p-6 border-b border-border/50 transition-all ${msg.is_read ? 'bg-transparent hover:bg-muted/5' : 'bg-brand/5 border-l-4 border-l-brand hover:bg-brand/10'}`}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-brand to-accent text-white flex items-center justify-center font-bold text-lg shadow-md">
+                        {msg.sender_name.charAt(0).toUpperCase()}
                       </div>
-                      {!msg.is_read && (
-                        <button 
-                          onClick={() => markAsRead(msg.id)}
-                          className="text-xs font-semibold text-brand hover:underline"
-                        >
-                          Marcar como leído
-                        </button>
-                      )}
+                      <div>
+                        <p className="font-bold text-foreground text-lg">{msg.sender_name}</p>
+                        <p className="text-xs text-muted font-medium">{new Date(msg.timestamp).toLocaleString()}</p>
+                      </div>
                     </div>
-                    <p className="text-foreground/90 mt-4 leading-relaxed bg-white border border-border p-4 rounded-xl shadow-sm">
+                    {!msg.is_read && (
+                      <button 
+                        onClick={() => markAsRead(msg.id)}
+                        className="text-xs font-bold text-brand hover:text-brand-hover bg-brand/10 px-3 py-1.5 rounded-full transition-colors"
+                      >
+                        Marcar como leído
+                      </button>
+                    )}
+                  </div>
+                  <div className="ml-16">
+                    <p className="text-foreground/90 leading-relaxed bg-background border border-border p-5 rounded-2xl rounded-tl-sm shadow-sm relative">
+                      <span className="absolute -left-2 top-0 w-4 h-4 bg-background border-l border-t border-border rotate-[-45deg] transform origin-top-right"></span>
                       {msg.content}
                     </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
     </div>
   );
 }

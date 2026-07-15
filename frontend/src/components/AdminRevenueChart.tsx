@@ -48,8 +48,8 @@ export default function AdminRevenueChart() {
         >
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#F46633" stopOpacity={0.4}/>
+              <stop offset="95%" stopColor="#F46633" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
@@ -68,24 +68,27 @@ export default function AdminRevenueChart() {
           />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: 'var(--surface)', 
+              backgroundColor: 'rgba(var(--surface-rgb), 0.8)', 
+              backdropFilter: 'blur(16px)',
               borderColor: 'var(--border)',
-              borderRadius: '0.75rem',
-              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-              color: 'var(--foreground)'
+              borderRadius: '1rem',
+              boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+              color: 'var(--foreground)',
+              fontWeight: 'bold',
+              border: '1px solid var(--border)'
             }}
-            itemStyle={{ color: 'var(--foreground)' }}
+            itemStyle={{ color: 'var(--foreground)', fontWeight: '900', fontSize: '1.25rem' }}
             formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Ingresos']}
-            labelStyle={{ color: 'var(--muted)', marginBottom: '0.25rem' }}
+            labelStyle={{ color: 'var(--muted)', marginBottom: '0.5rem', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}
           />
           <Area 
             type="monotone" 
             dataKey="revenue" 
-            stroke="#3b82f6" 
-            strokeWidth={3}
+            stroke="#F46633" 
+            strokeWidth={4}
             fillOpacity={1} 
             fill="url(#colorRevenue)" 
-            activeDot={{ r: 6, fill: '#3b82f6', stroke: 'var(--surface)', strokeWidth: 2 }}
+            activeDot={{ r: 8, fill: '#F46633', stroke: 'var(--surface)', strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>

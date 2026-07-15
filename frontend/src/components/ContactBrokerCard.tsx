@@ -1,17 +1,79 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function ContactBrokerCard({ broker, propertyId, propertyTitle }: { broker: any, propertyId: string, propertyTitle: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'whatsapp' | 'message' | null>(null);
+  
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
   const [message, setMessage] = useState(`Hola, me interesa la propiedad: ${propertyTitle}`);
   const [isSending, setIsSending] = useState(false);
+  const router = useRouter();
 
-  const handleWhatsApp = () => {
-    // Si el corredor tiene teléfono lo usamos, caso contrario un default
+  const executeWhatsApp = () => {
     const phone = broker?.phone_number || "593999999999";
     const text = encodeURIComponent(`Hola, vi la propiedad "${propertyTitle}" en el MVP Inmobiliario y quisiera más información.`);
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+  };
+
+  const handleWhatsApp = () => {
+    const username = localStorage.getItem('username');
+    if (!username) {
+      setPendingAction('whatsapp');
+      setShowAuthModal(true);
+      return;
+    }
+    executeWhatsApp();
+  };
+
+  const handleSendMessageClick = () => {
+    const username = localStorage.getItem('username');
+    if (!username) {
+      setPendingAction('message');
+      setShowAuthModal(true);
+      return;
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsLoggingIn(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('username', loginUsername);
+        if (data.user_type) localStorage.setItem('user_type', data.user_type);
+        window.dispatchEvent(new Event('authChange'));
+        setShowAuthModal(false);
+        if (pendingAction === 'whatsapp') {
+          executeWhatsApp();
+        } else if (pendingAction === 'message') {
+          setIsModalOpen(true);
+        }
+      } else {
+        setLoginError(data.detail || 'Credenciales inválidas');
+      }
+    } catch (err) {
+      setLoginError('Error de conexión');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -72,7 +134,7 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
       </button>
 
       <button 
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleSendMessageClick}
         className="w-full bg-surface border border-border text-foreground font-semibold py-3.5 rounded-xl hover:bg-background transition-all active:scale-95 flex items-center justify-center gap-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -108,6 +170,57 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
                 {isSending ? 'Enviando...' : 'Enviar'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+          <div className="bg-surface border border-border rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-in zoom-in-95 relative overflow-hidden">
+            <button 
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted/10"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 className="text-2xl font-black mb-1">Inicia sesión</h3>
+            <p className="text-sm text-muted mb-6">Para contactar al corredor necesitas una cuenta.</p>
+            
+            {loginError && <div className="mb-4 p-3 bg-red-500/10 text-red-500 rounded-lg text-sm font-medium">{loginError}</div>}
+            
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div>
+                <input 
+                  type="text" 
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  placeholder="Usuario"
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:ring-2 focus:ring-brand/30 outline-none font-medium transition-all" 
+                  required
+                />
+              </div>
+              <div>
+                <input 
+                  type="password" 
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="Contraseña"
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:ring-2 focus:ring-brand/30 outline-none font-medium transition-all" 
+                  required
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={isLoggingIn}
+                className="w-full py-3.5 rounded-xl bg-brand text-white font-bold hover:bg-brand-hover transition-all active:scale-95 shadow-lg shadow-brand/20 disabled:opacity-50 flex justify-center items-center gap-2"
+              >
+                {isLoggingIn ? 'Verificando...' : 'Acceder y continuar'}
+              </button>
+            </form>
+            <p className="mt-6 text-center text-sm font-medium text-muted">
+              ¿No tienes cuenta? <Link href="/register" className="text-brand hover:underline">Regístrate rápido</Link>
+            </p>
           </div>
         </div>
       )}

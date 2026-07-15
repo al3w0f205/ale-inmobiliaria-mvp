@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, mixins
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
@@ -148,7 +148,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(properties, many=True)
         return Response(serializer.data)
 
-class PaymentViewSet(viewsets.ModelViewSet):
+class PaymentViewSet(mixins.CreateModelMixin,
+                     mixins.RetrieveModelMixin,
+                     mixins.ListModelMixin,
+                     viewsets.GenericViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
@@ -186,7 +189,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
         serializer.save(broker=self.request.user)
 
 
-class MessageViewSet(viewsets.ModelViewSet):
+class MessageViewSet(mixins.CreateModelMixin,
+                     mixins.RetrieveModelMixin,
+                     mixins.ListModelMixin,
+                     viewsets.GenericViewSet):
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
 

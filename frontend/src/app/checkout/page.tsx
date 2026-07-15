@@ -79,30 +79,36 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-brand/20 selection:text-brand">
+    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden selection:bg-brand/20 selection:text-brand">
+      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080801a_1px,transparent_1px),linear-gradient(to_bottom,#8080801a_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-brand/10 blur-[120px] rounded-full"></div>
+      </div>
+      
       <Header />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16 relative z-10">
         <header className="mb-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">Finaliza tu Compra</h1>
           <p className="text-muted text-lg">Estás a un paso de publicar inmuebles ilimitados.</p>
         </header>
 
-        <div className="bg-surface border border-border shadow-2xl shadow-brand/5 rounded-3xl overflow-hidden flex flex-col md:flex-row">
+        <div className="bg-surface/80 backdrop-blur-2xl border border-border shadow-2xl shadow-brand/5 rounded-[2rem] overflow-hidden flex flex-col md:flex-row animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Order Summary */}
-          <div className="md:w-1/3 bg-muted/5 p-8 border-b md:border-b-0 md:border-r border-border flex flex-col">
-            <h2 className="text-xl font-bold mb-6">Resumen del Plan</h2>
-            <div className="flex justify-between items-center mb-4 text-foreground/80">
-              <span>Suscripción Mensual</span>
-              <span className="font-semibold">$29.99</span>
+          <div className="md:w-1/3 bg-background/50 p-8 border-b md:border-b-0 md:border-r border-border flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-accent"></div>
+            <h2 className="text-xl font-black mb-6 tracking-tight">Resumen del Plan</h2>
+            <div className="flex justify-between items-center mb-4 text-foreground/80 font-medium">
+              <span>Suscripción Anual</span>
+              <span className="font-bold text-foreground">$29.99</span>
             </div>
-            <div className="flex justify-between items-center mb-4 text-foreground/80">
+            <div className="flex justify-between items-center mb-4 text-foreground/80 font-medium">
               <span>Impuestos (15%)</span>
-              <span className="font-semibold">$4.50</span>
+              <span className="font-bold text-foreground">$4.50</span>
             </div>
             <div className="mt-auto pt-6 border-t border-border flex justify-between items-center">
-              <span className="text-lg font-bold">Total</span>
-              <span className="text-2xl font-bold text-brand">$34.49</span>
+              <span className="text-lg font-black tracking-tight">Total</span>
+              <span className="text-3xl font-black text-brand tracking-tighter">$34.49</span>
             </div>
           </div>
 
@@ -135,19 +141,23 @@ export default function CheckoutPage() {
             {/* PayPhone Content */}
             {activeTab === 'payphone' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <p className="text-muted mb-6">Paga de forma segura y automática con tu tarjeta de crédito o débito a través de PayPhone.</p>
-                <div className="bg-muted/10 border border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                    <span className="text-2xl font-bold text-[#F46633]">P</span>
+                <p className="text-muted font-medium mb-6">Paga de forma segura y automática con tu tarjeta de crédito o débito a través de PayPhone.</p>
+                <div className="bg-gradient-to-br from-[#F46633]/10 to-transparent border border-[#F46633]/20 rounded-2xl p-10 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-inner">
+                  <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-[#F46633]/10 rounded-full blur-xl"></div>
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl shadow-[#F46633]/20">
+                    <span className="text-4xl font-black text-[#F46633] tracking-tighter">P</span>
                   </div>
                   <button 
                     onClick={handlePayPhoneClick}
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto px-8 py-3.5 bg-[#F46633] text-white font-bold rounded-xl hover:bg-[#D95525] transition-all disabled:opacity-50"
+                    className="w-full sm:w-auto px-10 py-4 bg-[#F46633] text-white font-black text-lg tracking-wide rounded-xl hover:bg-[#D95525] transition-all disabled:opacity-50 shadow-xl shadow-[#F46633]/30 active:scale-95"
                   >
-                    {isSubmitting ? 'Procesando...' : 'Pagar con PayPhone'}
+                    {isSubmitting ? 'Procesando Transacción...' : 'Pagar con PayPhone'}
                   </button>
-                  <p className="text-xs text-muted mt-4">Transacción 100% segura y encriptada.</p>
+                  <div className="flex items-center gap-2 mt-6 text-xs text-muted font-semibold uppercase tracking-widest">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Transacción 100% Segura
+                  </div>
                 </div>
               </div>
             )}

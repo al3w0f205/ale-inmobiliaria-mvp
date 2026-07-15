@@ -65,11 +65,8 @@ export default function DashboardPage() {
   if (!isBroker) return null; // Wait for redirect
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-brand/20 selection:text-brand flex flex-col">
-      <Header />
-
-      <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-12 md:py-16">
-        <header className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+    <div className="w-full">
+      <header className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3">Mi Portfolio</h1>
             <p className="text-muted text-lg max-w-xl">Gestiona tus propiedades publicadas, revisa métricas y atrae más prospectos.</p>
@@ -184,7 +181,6 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
-      </main>
     </div>
   );
 }
