@@ -22,6 +22,7 @@ Moderno, disruptivo, premium, eficiente, directo.
 - **Foco absoluto en el contenido**: Las propiedades y el trato directo son los protagonistas, el diseño debe enmarcar sin distraer.
 - **Eficiencia visual**: Menos ruido, más contraste. Uso deliberado del espacio en blanco.
 - **Confianza premium**: El diseño debe inspirar seguridad y modernidad, justificando por qué los corredores deben elegir esta plataforma.
+- **Estética Inmersiva**: Uso justificado y elegante de Aurora Backgrounds y Glassmorphism para las interfaces de usuario (formularios, dashboards, admin).
 
 ## Accessibility & Inclusion
 - Contraste WCAG AA para textos legibles.

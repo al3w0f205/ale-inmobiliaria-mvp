@@ -6,13 +6,14 @@ Este documento constituye la especificación técnica y de arquitectura de softw
 
 ## 1. Visión General del Sistema y Objetivos de Diseño
 
-La plataforma está diseñada como una aplicación web Full-Stack que permite la intermediación directa entre corredores inmobiliarios (brokers) y clientes potenciales. 
+La plataforma está diseñada como una aplicación web Full-Stack que permite la intermediación directa entre corredores inmobiliarios (brokers) y clientes potenciales, con un fuerte enfoque en una **UI/UX Premium** para destacar frente a la competencia.
 
 ### 1.1. Principios Arquitectónicos
 *   **Desacoplamiento Estricto:** Separación total entre el cliente (Frontend React/Next.js) y el servidor (Backend Django API), comunicándose exclusivamente a través de interfaces RESTful JSON.
+*   **Diseño Premium y Estético:** Uso extensivo de Glassmorphism, Aurora Backgrounds y animaciones fluidas para inspirar confianza y modernidad.
 *   **Inmutabilidad del Entorno:** Todo el ciclo de vida del desarrollo se gestiona a través de Docker y Docker Compose, garantizando que el código se ejecute de manera idéntica en desarrollo, staging y producción.
-*   **Diseño Basado en Datos Espaciales:** A diferencia de las plataformas tradicionales que dependen de direcciones de texto, el núcleo de esta aplicación utiliza coordenadas geoespaciales nativas mediante PostGIS, permitiendo consultas de proximidad eficientes a nivel de base de datos.
-*   **Rendimiento del Cliente:** Utilización del paradigma *App Router* de Next.js para maximizar el renderizado del lado del servidor (SSR) y minimizar el tamaño del paquete JavaScript (Bundle Size).
+*   **Diseño Basado en Datos Espaciales:** Uso de coordenadas geoespaciales nativas mediante PostGIS, permitiendo consultas de proximidad eficientes a nivel de base de datos.
+*   **Rendimiento del Cliente:** Utilización del paradigma *App Router* de Next.js para maximizar el renderizado del lado del servidor (SSR).
 
 ---
 
@@ -52,15 +53,11 @@ El frontend está estructurado para maximizar la velocidad de carga (LCP) y la i
 
 ### 3.2. Árbol de Rutas y Componentes (App Router)
 *   **`src/app/layout.tsx`:** Contenedor raíz (Root Layout). Inyecta las fuentes tipográficas (Inter), configura los metadatos HTML (SEO base) y envuelve toda la aplicación en el `<ThemeProvider>` para el manejo persistente del modo oscuro.
-*   **`src/app/page.tsx` (Ruta: `/`):** Página de aterrizaje pre-renderizada estáticamente. Muestra la propuesta de valor sin requerir hidratación pesada del cliente.
-*   **`src/app/properties/page.tsx` (Ruta: `/properties`):** Dashboard interactivo de propiedades.
-    *   **Estado (React State):** Maneja los filtros activos (`searchLoc`, `filterType`, `filterPrice`).
-    *   **Ciclo de Vida:** Utiliza `useEffect` para consultar la API. *(Nota de refactorización futura: Mover la consulta al servidor usando Server Actions o SWR/React Query para mejor caché).*
-    *   **Renderizado Condicional:** Divide la pantalla (Split-Screen) entre la lista de propiedades y el componente de mapa general.
-*   **`src/app/property/[id]/page.tsx` (Ruta: `/property/:id`):** Componente de Servidor (`async function PropertyPage`).
-    *   **Obtención de Datos:** Realiza un `fetch` a la API interna antes de renderizar la página HTML al cliente, asegurando que los rastreadores web (SEO) lean el contenido de la propiedad.
-    *   **Manejo de Errores:** Si el ID no existe, invoca la función `notFound()` de Next.js para renderizar la vista de error 404 estandarizada.
-*   **`src/app/login/page.tsx` y `register/page.tsx`:** Rutas de autenticación. Utilizan control de estado de cliente para procesar los formularios y enviar el *payload* JSON al backend, almacenando el JWT resultante en la API de `localStorage`.
+*   **`src/app/page.tsx` (Ruta: `/`):** Página de aterrizaje pre-renderizada estáticamente. Muestra la propuesta de valor con un diseño ultra-premium.
+*   **`src/app/properties/page.tsx` (Ruta: `/properties`):** Catálogo interactivo de propiedades. Renderiza un diseño *split-screen* interactivo (lista vs mapa) similar a Airbnb.
+*   **`src/app/property/[id]/page.tsx`:** Componente de Servidor que obtiene los datos de una propiedad específica y la muestra en un diseño estilizado e inmersivo.
+*   **Flujos de Autenticación (`/login`, `/register`):** Rutas de autenticación repletas de detalles visuales (Fondo Grid + Aurora) y control de estado de cliente, almacenando el JWT en `localStorage`.
+*   **Dashboard de Usuario y Admin (`/dashboard`, `/admin/dashboard`):** Paneles de control para gestión de propiedades, mensajes estilo app nativa y herramientas de administración con gráficas `recharts`.
 
 ### 3.3. Sistema de Diseño y Estilos (Tailwind v4 OKLCH)
 El archivo `src/app/globals.css` declara variables CSS nativas utilizando el espacio de color perceptualmente uniforme **OKLCH**.
@@ -102,8 +99,9 @@ La capa de transformación de datos (Serializadores) es responsable de la conver
 
 ### 4.4. Controladores y Rutas (Views y URLs)
 La lógica de red de DRF está controlada mediante instancias de `ModelViewSet`.
-*   **Control de Acceso (`permissions`):** 
-    *   La clase `IsBrokerOrReadOnly` evalúa el nivel de permisos a nivel de objeto y a nivel de vista HTTP. Protege los verbos peligrosos (`POST`, `PUT`, `DELETE`) bloqueando a cualquier entidad que no coincida con el usuario propietario de la llave foránea de la propiedad y que no ostente el rol de `broker`. Los métodos seguros (`GET`, `OPTIONS`) están permitidos a nivel global.
+*   **Control de Acceso y Mixins de Seguridad (`permissions`, `mixins`):** 
+    *   La clase `IsBrokerOrReadOnly` evalúa el nivel de permisos a nivel de objeto y a nivel de vista HTTP. Protege los verbos peligrosos (`POST`, `PUT`, `DELETE`).
+    *   Endpoints críticos como los de `Payment` y `Message` no permiten métodos de borrado ni actualización indiscriminados, protegiéndolos mediante anulación de los métodos nativos del `ModelViewSet` y mixins personalizados.
 *   **Endpoint de Mensajes (`MessageViewSet`):** El método `get_queryset()` se sobreescribe para prevenir filtraciones de información (Data Leaks). Filtra los resultados del ORM limitándolos al conjunto donde el `request.user` coincide lógicamente con el remitente (`sender`) o el receptor (`receiver`).
 
 ---
