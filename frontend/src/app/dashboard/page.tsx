@@ -14,24 +14,22 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const userType = localStorage.getItem('user_type');
-    const token = localStorage.getItem('access_token');
+    const username = localStorage.getItem('username');
     
-    if (!token) {
+    if (!username) {
       router.push('/login');
     } else if (userType !== 'broker') {
       router.push('/');
     } else {
       setIsBroker(true);
-      fetchMyProperties(token);
+      fetchMyProperties();
     }
   }, [router]);
 
-  const fetchMyProperties = async (token: string) => {
+  const fetchMyProperties = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/me/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
@@ -49,13 +47,10 @@ export default function DashboardPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('¿Estás seguro de que deseas eliminar esta propiedad?')) return;
     
-    const token = localStorage.getItem('access_token');
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/${id}/`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (res.ok) {
         setProperties(properties.filter(p => p.id !== id));

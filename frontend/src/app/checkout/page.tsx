@@ -17,9 +17,9 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
-    const token = localStorage.getItem('access_token');
+    const username = localStorage.getItem('username');
     
-    if (!token) {
+    if (!username) {
       router.push('/login');
       return;
     }
@@ -32,9 +32,7 @@ export default function CheckoutPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        credentials: 'include',
         body: formData
       });
 
@@ -53,16 +51,16 @@ export default function CheckoutPage() {
 
   const handlePayPhoneClick = async () => {
     setIsSubmitting(true);
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    const username = localStorage.getItem('username');
+    if (!username) {
       router.push('/login');
       return;
     }
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payment/create/`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });

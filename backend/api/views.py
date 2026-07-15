@@ -16,10 +16,77 @@ from django.utils import timezone
 
 User = get_user_model()
 
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.conf import settings
+from rest_framework.views import APIView
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200:
+            access_token = response.data.get('access')
+            refresh_token = response.data.get('refresh')
+            
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                value=access_token,
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+                max_age=int(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
+            )
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['REFRESH_COOKIE'],
+                value=refresh_token,
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+                max_age=int(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
+            )
+            if 'access' in response.data:
+                del response.data['access']
+            if 'refresh' in response.data:
+                del response.data['refresh']
+            
+        return response
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        # Inject refresh token from cookie into data if not provided
+        mutable_data = request.data.copy()
+        if 'refresh' not in mutable_data:
+            mutable_data['refresh'] = request.COOKIES.get(settings.SIMPLE_JWT['REFRESH_COOKIE'])
+        request._full_data = mutable_data
+            
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200:
+            access_token = response.data.get('access')
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                value=access_token,
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+                max_age=int(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
+            )
+            if 'access' in response.data:
+                del response.data['access']
+            
+        return response
+
+class LogoutView(APIView):
+    permission_classes = (AllowAny,)
+    
+    def post(self, request):
+        response = Response({'detail': 'Successfully logged out.'})
+        response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
+        response.delete_cookie(settings.SIMPLE_JWT['REFRESH_COOKIE'])
+        return response
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()

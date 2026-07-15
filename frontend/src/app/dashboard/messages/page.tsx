@@ -15,23 +15,20 @@ export default function MessagesPage() {
   }, []);
 
   const fetchMessages = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    const username = localStorage.getItem('username');
+    if (!username) {
       router.push('/login');
       return;
     }
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
         setMessages(data);
       } else if (res.status === 401) {
-        localStorage.removeItem('access_token');
         router.push('/login');
       }
     } catch (error) {
@@ -42,13 +39,10 @@ export default function MessagesPage() {
   };
 
   const markAsRead = async (id: number) => {
-    const token = localStorage.getItem('access_token');
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages/${id}/mark_read/`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       fetchMessages(); // refresh
     } catch (error) {

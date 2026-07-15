@@ -10,11 +10,8 @@ export default function AdminRevenueChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('access_token');
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/chart_data`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          credentials: 'include'
         });
         if (res.ok) {
           const d = await res.json();

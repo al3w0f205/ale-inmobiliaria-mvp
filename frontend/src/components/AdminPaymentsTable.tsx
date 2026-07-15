@@ -8,11 +8,8 @@ export default function AdminPaymentsTable() {
 
   const fetchPayments = async () => {
     try {
-      const token = localStorage.getItem('access_token');
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
@@ -31,12 +28,9 @@ export default function AdminPaymentsTable() {
 
   const handleAction = async (id: number, action: 'approve' | 'reject') => {
     try {
-      const token = localStorage.getItem('access_token');
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${id}/${action}`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (res.ok) {
         fetchPayments(); // Reload list

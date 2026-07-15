@@ -28,9 +28,9 @@ export default function PublishPage() {
     // Check if user is logged in and is a broker (based on local storage for MVP)
     // The backend truly enforces it, but we handle basic routing here.
     const userType = localStorage.getItem('user_type');
-    const token = localStorage.getItem('access_token');
+    const username = localStorage.getItem('username');
     
-    if (!token) {
+    if (!username) {
       router.push('/login');
     } else if (userType !== 'broker') {
       router.push('/');
@@ -59,7 +59,6 @@ export default function PublishPage() {
     }
 
     try {
-      const token = localStorage.getItem('access_token');
       
       const formData = new FormData();
       formData.append('title', title);
@@ -89,9 +88,7 @@ export default function PublishPage() {
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        credentials: 'include',
         body: formData, // fetch handles multipart boundary automatically
       });
 

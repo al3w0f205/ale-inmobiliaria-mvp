@@ -4,9 +4,9 @@ services:
   db:
     image: postgis/postgis:15-3.4-alpine
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-marketplace}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
@@ -24,14 +24,14 @@ services:
     environment:
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-marketplace}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_URL=redis://redis:6379/0
       - PAYPHONE_TOKEN=${PAYPHONE_TOKEN:-""}
       - DEBUG=False
-      - ALLOWED_HOSTS=*  # Coolify Proxy maneja la seguridad del host
-      - CORS_ALLOW_ALL_ORIGINS=True
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
     depends_on:
       - db
       - redis

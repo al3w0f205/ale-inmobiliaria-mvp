@@ -15,22 +15,17 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
   };
 
   const handleSendMessage = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      alert("Por favor, inicia sesión para enviar mensajes internos.");
-      return;
-    }
-
     setIsSending(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           receiver: broker.id,
+          property: propertyId,
           content: message
         })
       });
