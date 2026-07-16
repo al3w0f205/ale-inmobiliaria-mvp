@@ -83,7 +83,7 @@ export default async function LandingPage() {
                 <p className="text-2xl font-black text-brand">Ahorra Miles</p>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
         </section>
 
         {/* PROPERTY GRID SECTION */}

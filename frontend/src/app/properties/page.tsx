@@ -92,7 +92,6 @@ export default function Home() {
             <div className="flex items-center justify-between mb-6">
               <span className="text-sm font-medium text-muted">{filteredProperties.length} propiedades encontradas</span>
             </div>
-            </div>
             
             <div className="grid gap-8 sm:grid-cols-2">
               {filteredProperties.map((prop, index) => (

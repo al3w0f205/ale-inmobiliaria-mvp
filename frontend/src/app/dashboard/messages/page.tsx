@@ -72,6 +72,7 @@ export default function MessagesPage() {
                   Cuando los clientes interesados te envíen un mensaje interno, aparecerá aquí.
                 </p>
               </div>
+            ) : (
             <div className="flex flex-col">
               {messages.map((msg) => (
                 <div 
