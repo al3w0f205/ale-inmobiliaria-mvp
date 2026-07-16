@@ -23,6 +23,8 @@ services:
   backend:
     build:
       context: ./backend
+    volumes:
+      - media_data:/app/media
     # Usamos daphne para soportar WebSockets y esperamos a la BD
     command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 core.asgi:application"
     # No exponemos puertos directamente, Coolify se encarga del proxy
@@ -60,3 +62,4 @@ services:
 
 volumes:
   postgres_data:
+  media_data:
