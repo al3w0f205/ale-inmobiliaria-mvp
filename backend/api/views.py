@@ -118,7 +118,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsBrokerOrReadOnly]
 
     def get_queryset(self):
-        queryset = Property.objects.filter(is_published=True).order_by('-created_at')
+        queryset = Property.objects.select_related('broker').filter(is_published=True).order_by('-created_at')
         
         # Filtros por query params
         search = self.request.query_params.get('search', None)
@@ -144,7 +144,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def me(self, request):
         if not request.user.is_authenticated:
             return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-        properties = Property.objects.filter(broker=request.user).order_by('-created_at')
+        properties = Property.objects.select_related('broker').filter(broker=request.user).order_by('-created_at')
         serializer = self.get_serializer(properties, many=True)
         return Response(serializer.data)
 
@@ -198,7 +198,7 @@ class MessageViewSet(mixins.CreateModelMixin,
 
     def get_queryset(self):
         # Users can see messages they sent or received
-        return Message.objects.filter(
+        return Message.objects.select_related('sender', 'receiver').filter(
             Q(sender=self.request.user) | Q(receiver=self.request.user)
         ).order_by('-timestamp')
 

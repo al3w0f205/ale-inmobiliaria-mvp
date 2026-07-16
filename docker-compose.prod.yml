@@ -9,6 +9,11 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER} -d $${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: always
 
   redis:
@@ -19,7 +24,7 @@ services:
     build:
       context: ./backend
     # Usamos daphne para soportar WebSockets y esperamos a la BD
-    command: sh -c "sleep 10 && python manage.py migrate && daphne -b 0.0.0.0 -p 8000 core.asgi:application"
+    command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 core.asgi:application"
     # No exponemos puertos directamente, Coolify se encarga del proxy
     environment:
       - DB_HOST=db
@@ -33,8 +38,10 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: always
 
   frontend:

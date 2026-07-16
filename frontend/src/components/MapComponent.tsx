@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { fetchNearbyPOIs, POI } from '@/utils/osm';
 
 // Fix for default marker icon in Leaflet + Next.js
 const customIcon = new L.Icon({
@@ -57,7 +58,7 @@ function MapClickReset({ onReset }: { onReset: () => void }) {
 
 // Componente interno para cargar POIs reales asincrónicamente
 function RealPOIs({ lat, lng, propId, isActive }: { lat: number, lng: number, propId: number, isActive: boolean }) {
-  const [pois, setPois] = useState<any[]>([]);
+  const [pois, setPois] = useState<POI[]>([]);
 
   React.useEffect(() => {
     if (!isActive) {
@@ -65,47 +66,8 @@ function RealPOIs({ lat, lng, propId, isActive }: { lat: number, lng: number, pr
       return;
     }
 
-    // Usamos Overpass API para buscar lugares reales a 500 metros
-    const query = `
-      [out:json];
-      (
-        node["amenity"="hospital"](around:500,${lat},${lng});
-        node["amenity"="cafe"](around:500,${lat},${lng});
-        node["shop"="supermarket"](around:500,${lat},${lng});
-        node["highway"="bus_stop"](around:500,${lat},${lng});
-        node["leisure"="park"](around:500,${lat},${lng});
-      );
-      out body 10;
-    `;
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-    
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        if (data.elements) {
-          const formattedPois = data.elements.map((el: any) => {
-            let type = 'Lugar';
-            let icon = '📍';
-            let color = '#ffffff';
-            if (el.tags.amenity === 'hospital') { type = 'Salud'; icon = '🏥'; color = '#ef4444'; } // Red
-            if (el.tags.amenity === 'cafe') { type = 'Cafetería'; icon = '☕'; color = '#f97316'; } // Orange
-            if (el.tags.shop === 'supermarket') { type = 'Supermercado'; icon = '🛒'; color = '#3b82f6'; } // Blue
-            if (el.tags.highway === 'bus_stop') { type = 'Transporte'; icon = '🚌'; color = '#6b7280'; } // Gray
-            if (el.tags.leisure === 'park') { type = 'Parque'; icon = '🌳'; color = '#22c55e'; } // Green
-            
-            return {
-              id: el.id,
-              lat: el.lat,
-              lng: el.lon,
-              name: el.tags.name || type,
-              type,
-              icon,
-              color
-            };
-          });
-          setPois(formattedPois);
-        }
-      })
+    fetchNearbyPOIs(lat, lng)
+      .then(data => setPois(data))
       .catch(err => console.error("Error fetching POIs", err));
   }, [lat, lng, isActive]);
 
@@ -115,7 +77,7 @@ function RealPOIs({ lat, lng, propId, isActive }: { lat: number, lng: number, pr
     <>
       {pois.map(poi => {
         const poiIcon = L.divIcon({
-          html: `<div style="font-size: 16px; background: ${poi.color}; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.2s;">${poi.icon}</div>`,
+          html: `<div style="font-size: 16px; background: ${poi.hexColor}; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.2s;">${poi.icon}</div>`,
           className: 'poi-icon',
           iconSize: [32, 32],
           iconAnchor: [16, 16]

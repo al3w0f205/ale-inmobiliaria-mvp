@@ -1,55 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { fetchNearbyPOIs, POI } from '@/utils/osm';
 
 export default function NearbyPOIsList({ lat, lng }: { lat: number, lng: number }) {
-  const [pois, setPois] = useState<any[]>([]);
+  const [pois, setPois] = useState<POI[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const query = `
-      [out:json];
-      (
-        node["amenity"="hospital"](around:500,${lat},${lng});
-        node["amenity"="cafe"](around:500,${lat},${lng});
-        node["shop"="supermarket"](around:500,${lat},${lng});
-        node["highway"="bus_stop"](around:500,${lat},${lng});
-        node["leisure"="park"](around:500,${lat},${lng});
-      );
-      out body 10;
-    `;
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-    
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        if (data.elements) {
-          const formattedPois = data.elements.map((el: any) => {
-            let type = 'Lugar';
-            let icon = '📍';
-            let color = 'bg-gray-500';
-            let textColor = 'text-gray-500';
-            let bgColor = 'bg-gray-500/10';
-
-            if (el.tags.amenity === 'hospital') { type = 'Salud'; icon = '🏥'; color = 'bg-red-500'; textColor = 'text-red-500'; bgColor = 'bg-red-500/10'; }
-            if (el.tags.amenity === 'cafe') { type = 'Cafetería'; icon = '☕'; color = 'bg-orange-500'; textColor = 'text-orange-500'; bgColor = 'bg-orange-500/10'; }
-            if (el.tags.shop === 'supermarket') { type = 'Supermercado'; icon = '🛒'; color = 'bg-blue-500'; textColor = 'text-blue-500'; bgColor = 'bg-blue-500/10'; }
-            if (el.tags.highway === 'bus_stop') { type = 'Transporte'; icon = '🚌'; color = 'bg-gray-600'; textColor = 'text-gray-600'; bgColor = 'bg-gray-600/10'; }
-            if (el.tags.leisure === 'park') { type = 'Parque'; icon = '🌳'; color = 'bg-green-500'; textColor = 'text-green-500'; bgColor = 'bg-green-500/10'; }
-            
-            return {
-              id: el.id,
-              name: el.tags.name || type,
-              type,
-              icon,
-              color,
-              textColor,
-              bgColor
-            };
-          });
-          setPois(formattedPois);
-        }
-      })
+    fetchNearbyPOIs(lat, lng)
+      .then(data => setPois(data))
       .catch(err => console.error("Error fetching POIs", err))
       .finally(() => setLoading(false));
   }, [lat, lng]);

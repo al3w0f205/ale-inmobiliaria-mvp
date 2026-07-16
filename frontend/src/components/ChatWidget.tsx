@@ -20,9 +20,10 @@ export default function ChatWidget() {
   useEffect(() => {
     if (!isOpen) return;
 
-    // Connect to Django Channels WebSocket
+    // Connect to Django Channels WebSocket using dynamic proxy route
     // Usamos 'general' como sala por defecto para el MVP
-    ws.current = new WebSocket('ws://localhost:8000/ws/chat/general/');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws.current = new WebSocket(`${protocol}//${window.location.host}/ws/chat/general/`);
 
     ws.current.onopen = () => {
       console.log('Connected to chat');

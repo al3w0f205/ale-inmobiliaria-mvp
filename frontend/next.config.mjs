@@ -10,6 +10,10 @@ const nextConfig = {
         source: '/media/:path*',
         destination: 'http://backend:8000/media/:path*',
       },
+      {
+        source: '/ws/:path*',
+        destination: 'http://backend:8000/ws/:path*',
+      },
     ]
   },
 };
