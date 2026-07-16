@@ -1,0 +1,48 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches:
+      - master
+      - main
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        # Si no hay package-lock.json o da problemas, usa npm install
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: /api
+          INTERNAL_API_URL: http://127.0.0.1:8000/api

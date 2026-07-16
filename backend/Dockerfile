@@ -3,6 +3,8 @@ FROM python:3.10-alpine
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so
+ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
 
 # Set work directory
 WORKDIR /app

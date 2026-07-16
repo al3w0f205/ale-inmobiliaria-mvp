@@ -18,8 +18,8 @@ services:
   backend:
     build:
       context: ./backend
-    # Se reemplaza runserver por gunicorn para producción
-    command: sh -c "pip install gunicorn && python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+    # Usamos daphne para soportar WebSockets y esperamos a la BD
+    command: sh -c "sleep 10 && python manage.py migrate && daphne -b 0.0.0.0 -p 8000 core.asgi:application"
     # No exponemos puertos directamente, Coolify se encarga del proxy
     environment:
       - DB_HOST=db
@@ -40,8 +40,7 @@ services:
   frontend:
     build:
       context: ./frontend
-    # En producción compilamos antes de iniciar el servidor Node
-    command: sh -c "npm install && npm run build && npm start"
+    # En producción usamos el CMD del Dockerfile (ya compilado)
     # El proxy inverso de Coolify escuchará en este puerto
     labels:
       - "coolify.proxy.port=3000"
