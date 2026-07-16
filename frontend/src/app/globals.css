@@ -51,6 +51,10 @@
   --color-accent: var(--accent);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -74,4 +78,10 @@ p {
   background: color-mix(in oklch, var(--color-surface) 80%, transparent);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
+}
+
+@utility blueprint-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23ffffff' fill='none' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M60 20 L20 40 L60 60 L100 40 Z' /%3E%3Cpath d='M20 40 L20 80 L60 100 L60 60' /%3E%3Cpath d='M100 40 L100 80 L60 100' /%3E%3Cpath d='M40 30 L60 10 L80 30' /%3E%3Cpath d='M40 70 L40 90' /%3E%3Cpath d='M80 70 L80 90' /%3E%3C/g%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  background-repeat: repeat;
 }

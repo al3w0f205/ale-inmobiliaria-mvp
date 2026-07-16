@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import RevealOnScroll from '@/components/RevealOnScroll';
+import BlueprintParallax from '@/components/BlueprintParallax';
 
 async function getRecentProperties() {
   try {
@@ -23,9 +24,15 @@ export default async function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background relative overflow-x-hidden">
-      {/* Fondo Dinámico Premium (Grid + Aurora) */}
-      <div className="fixed inset-0 pointer-events-none -z-20 flex items-center justify-center overflow-hidden">
+      {/* Fondo Dinámico Premium (Grid + Aurora + Wireframe) */}
+      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+        {/* Subtle grid base */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080801a_1px,transparent_1px),linear-gradient(to_bottom,#8080801a_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        
+        {/* Premium 3D Blueprint Parallax Background */}
+        <BlueprintParallax />
+        
+        {/* Aurora glow */}
         <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-brand/20 blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '12s' }}></div>
         <div className="absolute top-[20%] right-[-10%] w-[40vw] h-[40vw] bg-accent/15 blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
         <div className="absolute bottom-[-10%] left-[20%] w-[40vw] h-[40vw] bg-brand-light/10 blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '10s', animationDelay: '5s' }}></div>

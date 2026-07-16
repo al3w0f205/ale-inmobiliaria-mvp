@@ -52,11 +52,14 @@ export default function Header() {
     <header className="glass relative z-50 flex h-16 shrink-0 items-center justify-between px-6 shadow-sm border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="flex items-center gap-2">
         <Link href={username ? "/properties" : "/"} className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-hover text-white font-bold shadow-lg shadow-brand/30 group-hover:scale-105 transition-transform">
-            M
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-hover text-white shadow-lg shadow-brand/30 group-hover:scale-105 transition-transform">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <path d="M3 10l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <path d="M9 21V10l4-2v13" />
+            </svg>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground hidden sm:block group-hover:text-brand transition-colors">
-            Marketplace
+          <h1 className="text-xl font-black tracking-tight text-foreground hidden sm:block group-hover:text-brand transition-colors">
+            LibreCasa
           </h1>
         </Link>
       </div>
