@@ -8,32 +8,44 @@ import Header from '@/components/Header';
 export default function DashboardPage() {
   const router = useRouter();
   const [properties, setProperties] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total_properties: 0, total_views: 0, total_messages: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBroker, setIsBroker] = useState(false);
 
   useEffect(() => {
-    const userType = localStorage.getItem('user_type');
-    const username = localStorage.getItem('username');
-    
-    if (!username) {
-      router.push('/login');
-    } else if (userType !== 'broker') {
-      router.push('/');
-    } else {
-      setIsBroker(true);
-      fetchMyProperties();
-    }
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user_type !== 'broker') {
+            router.push('/');
+          } else {
+            setIsBroker(true);
+            fetchData();
+          }
+        } else {
+          router.push('/login');
+        }
+      } catch (err) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
   }, [router]);
 
-  const fetchMyProperties = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/me/`, {
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProperties(data);
+      const [resProps, resStats] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/me/`, { credentials: 'include' }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/broker_stats/`, { credentials: 'include' })
+      ]);
+      if (resProps.ok && resStats.ok) {
+        const dataProps = await resProps.json();
+        const dataStats = await resStats.json();
+        setProperties(dataProps);
+        setStats(dataStats);
       } else {
         setError('Error cargando tus propiedades.');
       }
@@ -95,23 +107,26 @@ export default function DashboardPage() {
 
         {/* Resumen de estadísticas (Placeholder para MVP) */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-          <div className="p-6 rounded-3xl bg-surface border border-border shadow-xl shadow-brand/5">
-            <p className="text-sm font-semibold text-muted uppercase tracking-wider mb-2">Total Publicadas</p>
-            <p className="text-4xl font-bold text-brand">{properties.length}</p>
+          <div className="p-8 rounded-[2rem] bg-surface border border-border shadow-xl shadow-brand/5 flex flex-col items-start hover:border-brand/30 transition-colors">
+            <div className="w-12 h-12 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </div>
+            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Total Publicadas</p>
+            <p className="text-5xl font-black text-foreground tracking-tighter">{stats.total_properties}</p>
           </div>
-          <div className="p-6 rounded-3xl bg-surface border border-border shadow-xl shadow-brand/5 opacity-50 relative overflow-hidden group cursor-not-allowed">
-             <div className="absolute inset-0 bg-background/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 backdrop-blur-sm">
-                <span className="font-bold text-sm">Próximamente</span>
-             </div>
-            <p className="text-sm font-semibold text-muted uppercase tracking-wider mb-2">Vistas este mes</p>
-            <p className="text-4xl font-bold text-foreground">--</p>
+          <div className="p-8 rounded-[2rem] bg-surface border border-border shadow-xl shadow-brand/5 flex flex-col items-start hover:border-brand/30 transition-colors">
+            <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Vistas Totales</p>
+            <p className="text-5xl font-black text-foreground tracking-tighter">{stats.total_views}</p>
           </div>
-          <div className="p-6 rounded-3xl bg-surface border border-border shadow-xl shadow-brand/5 opacity-50 relative overflow-hidden group cursor-not-allowed">
-             <div className="absolute inset-0 bg-background/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 backdrop-blur-sm">
-                <span className="font-bold text-sm">Próximamente</span>
-             </div>
-            <p className="text-sm font-semibold text-muted uppercase tracking-wider mb-2">Prospectos</p>
-            <p className="text-4xl font-bold text-foreground">--</p>
+          <div className="p-8 rounded-[2rem] bg-surface border border-border shadow-xl shadow-brand/5 flex flex-col items-start hover:border-brand/30 transition-colors">
+            <div className="w-12 h-12 bg-green-500/10 text-green-500 rounded-2xl flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Prospectos (Mensajes)</p>
+            <p className="text-5xl font-black text-foreground tracking-tighter">{stats.total_messages}</p>
           </div>
         </section>
 

@@ -25,10 +25,6 @@ export default function LoginPage() {
       const data = await res.json();
       
       if (res.ok) {
-        localStorage.setItem('username', username);
-        if (data.user_type) {
-            localStorage.setItem('user_type', data.user_type);
-        }
         // Dispatch custom event to notify other components (like Header)
         window.dispatchEvent(new Event('authChange'));
         router.push('/properties');

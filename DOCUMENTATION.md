@@ -106,22 +106,19 @@ La lógica de red de DRF está controlada mediante instancias de `ModelViewSet`.
 
 ---
 
-## 5. Deuda Técnica Actual (Refactorizaciones Requeridas)
+## 5. Roadmap de Funcionalidades (Próximos Pasos)
 
-Esta sección delimita de manera explícita las áreas arquitectónicas que han sido simplificadas para el alcance del MVP, y que deben ser abordadas para la iteración de producción v1.0.
+Esta sección delimita las áreas funcionales que complementarán el MVP inicial para brindar una experiencia completa tanto a corredores como a administradores y clientes finales. La deuda técnica inicial de autenticación, seguridad y POIs ha sido saldada.
 
-1.  **Orquestación de Puntos de Interés (POI):**
-    *   **Estado Actual:** En `src/components/MapComponent.tsx`, la función `generateMockPOIs()` inyecta ruido matemático a las coordenadas nativas de la propiedad para crear representaciones visuales simuladas de clínicas y transporte público.
-    *   **Acción Requerida:** Integración de la API de Overpass (OpenStreetMap) en el servidor Backend. El servidor debe emitir una consulta radial a OSM, decodificar el resultado XML/JSON, parsear los nodos categorizados y enviarlos estructurados al Frontend.
-2.  **Sistema Abstracto de Calificaciones (Ratings):**
-    *   **Estado Actual:** La UI de Next.js (en `ContactBrokerCard.tsx` y las tarjetas de la grilla principal) inyecta de manera codificada (`hard-coded`) un valor estático de "4.9" estrellas y "(24)" reseñas para la métrica visual.
-    *   **Acción Requerida:** Crear un nuevo modelo Django `Review` (User ForeignKey, Rating Integer, Comment Text). El `UserSerializer` debe agregar (Sum/Count) la calificación promedio mediante anotaciones del ORM (`annotate`) para exponer un valor matemático real.
-3.  **Seguridad y Transporte de Tokens (JWT):**
-    *   **Estado Actual:** El Payload de Autenticación se transfiere al `localStorage` del cliente del navegador web. Si ocurre una vulnerabilidad de *Cross-Site Scripting (XSS)* en dependencias de terceros, los tokens son legibles mediante `window.localStorage`.
-    *   **Acción Requerida:** Desplegar el Backend y el Frontend bajo un subdominio común. Modificar la respuesta del token de autenticación para que la capa DRF emita los tokens de acceso y refresco dentro de encabezados de cookies `Set-Cookie` marcados como `HttpOnly`, `Secure` y `SameSite=Lax`. Modificar la lógica de Axios/Fetch en el frontend para incluir credenciales implícitas en las peticiones.
-4.  **Integración Formal de Pasarelas (Webhook Flow):**
-    *   **Estado Actual:** La estructura transaccional del webhook (`payphone_webhook`) está presente y funcional dentro de `views.py`. Sin embargo, no existe en la UI la llamada para detonar el flujo y emitir el ID de cliente (`clientTxId`) contra la pasarela pública.
-    *   **Acción Requerida:** Desarrollo del portal (Dashboard) del corredor para gestionar los planes de pago y detonar la solicitud inicial de compra mediante el componente de integración.
+1.  **Panel de Administración Integral (Admin Dashboard):**
+    *   **Estado Actual:** El backend cuenta con un `AdminDashboardViewSet` para extraer métricas y listados, pero carece de una interfaz gráfica (UI) en el Frontend que permita al dueño de la plataforma operar el negocio (aprobar transacciones, visualizar KPIs, administrar usuarios).
+    *   **Acción Requerida:** Construir la ruta `/admin/dashboard` en Next.js con gráficos e interfaces de tablas para el control administrativo, consumiendo los endpoints existentes protegidos.
+2.  **Métricas en el Dashboard del Corredor (Broker Analytics):**
+    *   **Estado Actual:** El dashboard del corredor (`/dashboard`) posee tarjetas estáticas de "Próximamente" para métricas como vistas mensuales y volumen de prospectos/mensajes.
+    *   **Acción Requerida:** Modificar el backend para entregar conteos específicos de interacciones y reflejarlos en las tarjetas dinámicas del dashboard del corredor, demostrando así el valor y alcance de la plataforma.
+3.  **Filtros de Búsqueda Avanzada en Catálogo:**
+    *   **Estado Actual:** La vista principal del catálogo de propiedades (`/properties`) renderiza la totalidad de los inmuebles activos en una lista y un mapa, sin controles para afinar la búsqueda.
+    *   **Acción Requerida:** Integrar una barra de herramientas de filtrado lateral o superior (tipo de propiedad, rango de precio) que manipule los parámetros de URL y consulte dinámicamente al backend (usando los filtros de DRF) para acotar los resultados.
 
 ---
 

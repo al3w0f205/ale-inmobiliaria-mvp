@@ -25,18 +25,24 @@ export default function PublishPage() {
   const [location, setLocation] = useState<[number, number] | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in and is a broker (based on local storage for MVP)
-    // The backend truly enforces it, but we handle basic routing here.
-    const userType = localStorage.getItem('user_type');
-    const username = localStorage.getItem('username');
-    
-    if (!username) {
-      router.push('/login');
-    } else if (userType !== 'broker') {
-      router.push('/');
-    } else {
-      setIsBroker(true);
-    }
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user_type !== 'broker') {
+            router.push('/');
+          } else {
+            setIsBroker(true);
+          }
+        } else {
+          router.push('/login');
+        }
+      } catch (err) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
   }, [router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

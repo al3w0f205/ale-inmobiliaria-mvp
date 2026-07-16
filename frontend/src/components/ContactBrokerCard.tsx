@@ -24,9 +24,29 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
   };
 
+  const [loggedInUsername, setLoggedInUsername] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setLoggedInUsername(data.username);
+        } else {
+          setLoggedInUsername(null);
+        }
+      } catch (err) {
+        setLoggedInUsername(null);
+      }
+    };
+    checkAuth();
+    window.addEventListener('authChange', checkAuth);
+    return () => window.removeEventListener('authChange', checkAuth);
+  }, []);
+
   const handleWhatsApp = () => {
-    const username = localStorage.getItem('username');
-    if (!username) {
+    if (!loggedInUsername) {
       setPendingAction('whatsapp');
       setShowAuthModal(true);
       return;
@@ -35,8 +55,7 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
   };
 
   const handleSendMessageClick = () => {
-    const username = localStorage.getItem('username');
-    if (!username) {
+    if (!loggedInUsername) {
       setPendingAction('message');
       setShowAuthModal(true);
       return;
@@ -57,8 +76,6 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('username', loginUsername);
-        if (data.user_type) localStorage.setItem('user_type', data.user_type);
         window.dispatchEvent(new Event('authChange'));
         setShowAuthModal(false);
         if (pendingAction === 'whatsapp') {
@@ -118,8 +135,8 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
             <span className="text-muted/30 text-xs">•</span>
             <div className="flex items-center text-yellow-500">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <span className="text-xs font-bold text-foreground ml-1">4.9</span>
-              <span className="text-xs text-muted ml-0.5">(24)</span>
+              <span className="text-xs font-bold text-foreground ml-1">{broker?.average_rating > 0 ? broker.average_rating : 'Nuevo'}</span>
+              <span className="text-xs text-muted ml-0.5">{broker?.review_count > 0 ? `(${broker.review_count})` : ''}</span>
             </div>
           </div>
         </div>

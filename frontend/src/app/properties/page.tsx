@@ -18,12 +18,24 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('search')) setSearchLoc(params.get('search')!);
+      if (params.get('type')) setFilterType(params.get('type')!);
+      if (params.get('max_price')) setFilterPrice(params.get('max_price')!);
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchProperties = async () => {
       try {
         const queryParams = new URLSearchParams();
         if (searchLoc) queryParams.append('search', searchLoc);
         if (filterType) queryParams.append('type', filterType);
         if (filterPrice) queryParams.append('max_price', filterPrice);
+
+        const newUrl = `${window.location.pathname}?${queryParams.toString()}`;
+        window.history.replaceState({}, '', newUrl);
 
         const host = typeof window === 'undefined' ? 'http://backend:8000' : '';
         const res = await fetch(`${host}${process.env.NEXT_PUBLIC_API_URL}/properties?${queryParams.toString()}`);

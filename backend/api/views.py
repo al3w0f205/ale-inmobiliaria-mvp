@@ -88,6 +88,16 @@ class LogoutView(APIView):
         response.delete_cookie(settings.SIMPLE_JWT['REFRESH_COOKIE'])
         return response
 
+class AuthMeView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return Response({
+            'username': request.user.username,
+            'email': request.user.email,
+            'user_type': getattr(request.user, 'user_type', 'client')
+        })
+
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -140,6 +150,29 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(broker=self.request.user)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.views_count += 1
+        instance.save(update_fields=['views_count'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def broker_stats(self, request):
+        if not request.user.is_authenticated or getattr(request.user, 'user_type', '') != User.IS_BROKER:
+            return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        properties = Property.objects.filter(broker=request.user)
+        total_properties = properties.count()
+        total_views = properties.aggregate(total_views=Sum('views_count'))['total_views'] or 0
+        total_messages = Message.objects.filter(receiver=request.user).count()
+
+        return Response({
+            'total_properties': total_properties,
+            'total_views': total_views,
+            'total_messages': total_messages
+        })
+
     @action(detail=False, methods=['get'])
     def me(self, request):
         if not request.user.is_authenticated:
@@ -147,6 +180,66 @@ class PropertyViewSet(viewsets.ModelViewSet):
         properties = Property.objects.select_related('broker').filter(broker=request.user).order_by('-created_at')
         serializer = self.get_serializer(properties, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny])
+    def pois(self, request, pk=None):
+        from django.core.cache import cache
+        import requests
+        import urllib.parse
+        
+        property_obj = self.get_object()
+        lat, lng = property_obj.location.y, property_obj.location.x
+        
+        cache_key = f"pois_{pk}"
+        pois = cache.get(cache_key)
+        
+        if pois is None:
+            query = f"""
+            [out:json];
+            (
+              node["amenity"="hospital"](around:500,{lat},{lng});
+              node["amenity"="cafe"](around:500,{lat},{lng});
+              node["shop"="supermarket"](around:500,{lat},{lng});
+              node["highway"="bus_stop"](around:500,{lat},{lng});
+              node["leisure"="park"](around:500,{lat},{lng});
+            );
+            out body 10;
+            """
+            url = f"https://overpass-api.de/api/interpreter?data={urllib.parse.quote(query)}"
+            try:
+                res = requests.get(url, timeout=10)
+                data = res.json()
+                pois = []
+                for el in data.get('elements', []):
+                    tags = el.get('tags', {})
+                    ptype = 'Lugar'
+                    icon = '📍'
+                    hexColor = '#ffffff'
+                    textColor = 'text-gray-500'
+                    bgColor = 'bg-gray-500/10'
+
+                    if tags.get('amenity') == 'hospital': ptype = 'Salud'; icon = '🏥'; hexColor = '#ef4444'; textColor = 'text-red-500'; bgColor = 'bg-red-500/10'
+                    if tags.get('amenity') == 'cafe': ptype = 'Cafetería'; icon = '☕'; hexColor = '#f97316'; textColor = 'text-orange-500'; bgColor = 'bg-orange-500/10'
+                    if tags.get('shop') == 'supermarket': ptype = 'Supermercado'; icon = '🛒'; hexColor = '#3b82f6'; textColor = 'text-blue-500'; bgColor = 'bg-blue-500/10'
+                    if tags.get('highway') == 'bus_stop': ptype = 'Transporte'; icon = '🚌'; hexColor = '#6b7280'; textColor = 'text-gray-600'; bgColor = 'bg-gray-600/10'
+                    if tags.get('leisure') == 'park': ptype = 'Parque'; icon = '🌳'; hexColor = '#22c55e'; textColor = 'text-green-500'; bgColor = 'bg-green-500/10'
+                    
+                    pois.append({
+                        'id': el['id'],
+                        'lat': el['lat'],
+                        'lng': el.get('lon', el.get('lng')),
+                        'name': tags.get('name', ptype),
+                        'type': ptype,
+                        'icon': icon,
+                        'hexColor': hexColor,
+                        'textColor': textColor,
+                        'bgColor': bgColor
+                    })
+                cache.set(cache_key, pois, 60*60*24) # Cache for 24 hours
+            except Exception as e:
+                pois = []
+                
+        return Response(pois)
 
 class PaymentViewSet(mixins.CreateModelMixin,
                      mixins.RetrieveModelMixin,

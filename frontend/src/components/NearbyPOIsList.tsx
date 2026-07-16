@@ -1,18 +1,29 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { fetchNearbyPOIs, POI } from '@/utils/osm';
+export interface POI {
+  id: number;
+  lat: number;
+  lng: number;
+  name: string;
+  type: string;
+  icon: string;
+  hexColor: string;
+  textColor: string;
+  bgColor: string;
+}
 
-export default function NearbyPOIsList({ lat, lng }: { lat: number, lng: number }) {
+export default function NearbyPOIsList({ propertyId }: { propertyId: string | number }) {
   const [pois, setPois] = useState<POI[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchNearbyPOIs(lat, lng)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/${propertyId}/pois/`)
+      .then(res => res.json())
       .then(data => setPois(data))
       .catch(err => console.error("Error fetching POIs", err))
       .finally(() => setLoading(false));
-  }, [lat, lng]);
+  }, [propertyId]);
 
   if (loading) {
     return <div className="animate-pulse flex gap-4 overflow-x-auto py-4">

@@ -11,11 +11,6 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchMessages = useCallback(async () => {
-    const username = localStorage.getItem('username');
-    if (!username) {
-      router.push('/login');
-      return;
-    }
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages/`, {

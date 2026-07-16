@@ -69,9 +69,20 @@ from rest_framework_gis.fields import GeometryField
 class BrokerSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='username')
     phone = serializers.CharField(source='phone_number')
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'name', 'phone']
+        fields = ['id', 'name', 'phone', 'average_rating', 'review_count']
+
+    def get_average_rating(self, obj):
+        from django.db.models import Avg
+        avg = obj.reviews_received.aggregate(Avg('rating'))['rating__avg']
+        return round(avg, 1) if avg is not None else 0.0
+
+    def get_review_count(self, obj):
+        return obj.reviews_received.count()
 
 class PropertySerializer(serializers.ModelSerializer):
     """

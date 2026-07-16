@@ -11,9 +11,20 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const user = localStorage.getItem('username');
-      setUsername(user);
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/`, {
+          credentials: 'include'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsername(data.username);
+        } else {
+          setUsername(null);
+        }
+      } catch (err) {
+        setUsername(null);
+      }
     };
     
     checkAuth();
@@ -41,8 +52,6 @@ export default function Header() {
     } catch (e) {
       console.error('Logout error', e);
     }
-    localStorage.removeItem('username');
-    localStorage.removeItem('user_type');
     setUsername(null);
     setDropdownOpen(false);
     window.dispatchEvent(new Event('authChange'));

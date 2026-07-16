@@ -41,10 +41,6 @@ export default function RegisterPage() {
         });
         
         if (loginRes.ok) {
-          const loginData = await loginRes.json();
-          localStorage.setItem('access_token', loginData.access);
-          localStorage.setItem('refresh_token', loginData.refresh);
-          localStorage.setItem('username', username);
           window.dispatchEvent(new Event('authChange'));
           router.push('/');
         } else {

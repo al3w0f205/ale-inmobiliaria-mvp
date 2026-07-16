@@ -94,7 +94,7 @@ export default async function LandingPage() {
         </section>
 
         {/* PROPERTY GRID SECTION */}
-        <section id="explorar" className="w-full bg-surface border-y border-border/50 py-24">
+        <section id="explorar" className="w-full bg-background/40 backdrop-blur-sm border-y border-white/5 py-24 relative z-10">
           <RevealOnScroll className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
               <div>
@@ -144,7 +144,7 @@ export default async function LandingPage() {
         </section>
 
         {/* FEATURES SECTION */}
-        <section className="w-full relative py-24 md:py-32 lg:py-40 border-b border-border/50">
+        <section className="w-full relative py-24 md:py-32 lg:py-40 border-b border-white/5 bg-background/20 backdrop-blur-sm z-10">
           <div className="max-w-7xl mx-auto px-6 relative z-10">
             <RevealOnScroll className="text-center mb-20 md:mb-32">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-foreground max-w-3xl mx-auto leading-tight">
@@ -200,9 +200,9 @@ export default async function LandingPage() {
                       <div className="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-lg"></div>
                     </div>
                     
-                    <div className="absolute top-1/3 left-1/3 bg-white p-3 rounded-xl shadow-xl border border-border w-48 z-10">
-                      <div className="w-full h-20 bg-muted/20 rounded-lg mb-2"></div>
-                      <p className="font-bold text-sm">$150,000</p>
+                    <div className="absolute top-1/3 left-1/3 bg-surface/90 backdrop-blur-md p-3 rounded-xl shadow-2xl border border-white/10 w-48 z-10">
+                      <div className="w-full h-20 bg-white/5 rounded-lg mb-2"></div>
+                      <p className="font-bold text-sm text-foreground">$150,000</p>
                       <p className="text-xs text-muted">Casa Moderna</p>
                     </div>
                   </div>
@@ -214,21 +214,16 @@ export default async function LandingPage() {
         </section>
 
         {/* CTA SECTION */}
-        <section className="w-full bg-foreground text-background py-24 md:py-32 lg:py-40 relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-brand blur-[150px] rounded-full opacity-20 pointer-events-none"></div>
+        <section className="w-full bg-background/60 backdrop-blur-lg py-24 md:py-32 lg:py-40 relative overflow-hidden border-t border-white/10 z-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-brand blur-[150px] rounded-full opacity-30 pointer-events-none"></div>
           
           <RevealOnScroll className="max-w-4xl mx-auto px-6 text-center space-y-10 relative z-10">
-            <div className="inline-block mb-4">
-              <span className="px-6 py-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-white/80 font-semibold tracking-widest uppercase text-sm">
-                Únete al Futuro
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
+            <h2 className="text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-[1] text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40">
               ¿Eres Corredor? <br/>
               Multiplica tu rentabilidad.
             </h2>
-            <p className="text-xl text-muted-foreground/80 max-w-2xl mx-auto leading-relaxed">
-              Cero comisiones por venta. Perfil verificado, pagos instantáneos y control total sobre tus clientes. Únete al estándar del futuro hoy mismo.
+            <p className="text-xl md:text-2xl text-muted max-w-2xl mx-auto leading-relaxed font-medium">
+              Cero comisiones por venta. Perfil verificado, pagos instantáneos y control total sobre tus clientes.
             </p>
             <div className="pt-8">
               <Link 

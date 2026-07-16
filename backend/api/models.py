@@ -97,6 +97,7 @@ class Property(models.Model):
     location = models.PointField(srid=4326) # WGS 84
     
     is_published = models.BooleanField(default=True)
+    views_count = models.IntegerField(default=0, help_text="Total de visitas al detalle de la propiedad")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -140,4 +141,21 @@ class Message(models.Model):
 
     def __str__(self):
         return f"De {self.sender.username} a {self.receiver.username} ({self.timestamp})"
+
+
+class Review(models.Model):
+    """
+    Sistema de calificaciones para corredores.
+    """
+    reviewer = models.ForeignKey(User, related_name='reviews_written', on_delete=models.CASCADE)
+    broker = models.ForeignKey(User, related_name='reviews_received', on_delete=models.CASCADE)
+    rating = models.IntegerField(help_text="Calificación de 1 a 5")
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Reseña de {self.reviewer.username} a {self.broker.username} - {self.rating} estrellas"
 

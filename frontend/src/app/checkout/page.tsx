@@ -17,12 +17,7 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
-    const username = localStorage.getItem('username');
-    
-    if (!username) {
-      router.push('/login');
-      return;
-    }
+
 
     const formData = new FormData();
     formData.append('amount', '29.99');
@@ -39,6 +34,8 @@ export default function CheckoutPage() {
       if (res.ok) {
         alert('Comprobante enviado exitosamente. Un administrador lo revisará pronto.');
         router.push('/dashboard');
+      } else if (res.status === 401 || res.status === 403) {
+        router.push('/login');
       } else {
         alert('Hubo un error al enviar tu comprobante.');
       }
@@ -51,11 +48,7 @@ export default function CheckoutPage() {
 
   const handlePayPhoneClick = async () => {
     setIsSubmitting(true);
-    const username = localStorage.getItem('username');
-    if (!username) {
-      router.push('/login');
-      return;
-    }
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payment/create/`, {
         method: 'POST',
@@ -68,6 +61,8 @@ export default function CheckoutPage() {
         const data = await res.json();
         // Here we would integrate the actual PayPhone button with data.clientTxId and data.amount
         alert(`ID de Transacción PayPhone generado: ${data.clientTxId}. (Simulación exitosa)`);
+      } else if (res.status === 401 || res.status === 403) {
+        router.push('/login');
       } else {
         alert('Error conectando con Payphone.');
       }

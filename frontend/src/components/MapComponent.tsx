@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import { fetchNearbyPOIs, POI } from '@/utils/osm';
+import { POI } from '@/components/NearbyPOIsList';
 
 // Fix for default marker icon in Leaflet + Next.js
 const customIcon = new L.Icon({
@@ -66,7 +66,8 @@ function RealPOIs({ lat, lng, propId, isActive }: { lat: number, lng: number, pr
       return;
     }
 
-    fetchNearbyPOIs(lat, lng)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/${propId}/pois/`)
+      .then(res => res.json())
       .then(data => setPois(data))
       .catch(err => console.error("Error fetching POIs", err));
   }, [lat, lng, isActive]);

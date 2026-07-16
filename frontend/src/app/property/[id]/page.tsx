@@ -101,7 +101,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
                   <MapComponent properties={[property]} />
                 </div>
                 
-                <NearbyPOIsList lat={property.location.coordinates[1]} lng={property.location.coordinates[0]} />
+                <NearbyPOIsList propertyId={property.id} />
               </section>
             </RevealOnScroll>
           </div>
