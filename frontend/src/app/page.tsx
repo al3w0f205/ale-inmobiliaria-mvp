@@ -37,7 +37,7 @@ export default async function LandingPage() {
         </div>
 
         <div className="relative z-10 w-full">
-          <Header isTransparent={true} />
+          <Header />
         </div>
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-24 md:pb-32 flex flex-col items-center text-center">
