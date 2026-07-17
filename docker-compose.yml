@@ -18,11 +18,9 @@ services:
   backend:
     build:
       context: ./backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: daphne -b 0.0.0.0 -p 8000 core.asgi:application
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -39,13 +37,8 @@ services:
   frontend:
     build:
       context: ./frontend
-    command: npm run dev
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
     environment:
       - NEXT_PUBLIC_API_URL=/api
       - INTERNAL_API_URL=http://backend:8000/api
