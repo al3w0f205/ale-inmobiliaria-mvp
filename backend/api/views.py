@@ -13,6 +13,10 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from datetime import timedelta
 from django.utils import timezone
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 
 User = get_user_model()
 
@@ -88,15 +92,21 @@ class LogoutView(APIView):
         response.delete_cookie(settings.SIMPLE_JWT['REFRESH_COOKIE'])
         return response
 
+from .serializers import UserProfileSerializer
+
 class AuthMeView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        return Response({
-            'username': request.user.username,
-            'email': request.user.email,
-            'user_type': getattr(request.user, 'user_type', 'client')
-        })
+        serializer = UserProfileSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
+        
+    def patch(self, request):
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
@@ -144,6 +154,18 @@ class PropertyViewSet(viewsets.ModelViewSet):
         max_price = self.request.query_params.get('max_price', None)
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
+            
+        min_bedrooms = self.request.query_params.get('min_bedrooms', None)
+        if min_bedrooms:
+            queryset = queryset.filter(bedrooms__gte=min_bedrooms)
+            
+        min_bathrooms = self.request.query_params.get('min_bathrooms', None)
+        if min_bathrooms:
+            queryset = queryset.filter(bathrooms__gte=min_bathrooms)
+            
+        min_area = self.request.query_params.get('min_area', None)
+        if min_area:
+            queryset = queryset.filter(area_sqm__gte=min_area)
             
         return queryset
 
@@ -296,7 +318,23 @@ class MessageViewSet(mixins.CreateModelMixin,
         ).order_by('-timestamp')
 
     def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)
+        message = serializer.save(sender=self.request.user)
+        # Enviar notificación por correo
+        receiver = message.receiver
+        if receiver.email:
+            try:
+                frontend_url = settings.CORS_ALLOWED_ORIGINS[0] if settings.CORS_ALLOWED_ORIGINS else "http://localhost:3000"
+                email_body = f"Hola {receiver.username},\n\nTienes un nuevo mensaje de {self.request.user.username} en Rondira:\n\n\"{message.content}\"\n\nIngresa a tu cuenta para responder:\n{frontend_url}/dashboard"
+                
+                send_mail(
+                    f'Nuevo mensaje de {self.request.user.username} - Rondira',
+                    email_body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [receiver.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Error enviando notificación de mensaje: {e}")
 
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
@@ -392,3 +430,59 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         ]
 
         return Response(chart_data)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.filter(email=email).first()
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            # Use the first allowed origin (usually the frontend URL in prod)
+            frontend_url = settings.CORS_ALLOWED_ORIGINS[0] if settings.CORS_ALLOWED_ORIGINS else "http://localhost:3000"
+            reset_url = f"{frontend_url}/reset-password?uid={uid}&token={token}"
+            
+            message = f"Hola {user.username},\n\nPara restablecer tu contraseña, haz clic en el siguiente enlace:\n\n{reset_url}\n\nSi no solicitaste esto, ignora este correo."
+            
+            try:
+                send_mail(
+                    'Restablecer Contraseña - Rondira',
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Error sending email: {e}")
+                
+        # Always return success even if email not found to prevent user enumeration
+        return Response({'message': 'Si tu correo existe en nuestro sistema, hemos enviado un enlace de recuperación.'})
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        uidb64 = request.data.get('uid')
+        token = request.data.get('token')
+        new_password = request.data.get('password')
+        
+        if not all([uidb64, token, new_password]):
+            return Response({'error': 'Faltan datos.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+            
+        if user is not None and default_token_generator.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Contraseña actualizada correctamente.'})
+        else:
+            return Response({'error': 'El enlace es inválido o ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)

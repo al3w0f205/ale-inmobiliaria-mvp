@@ -36,7 +36,13 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'user_type', 'phone_number']
+        fields = ['id', 'username', 'email', 'user_type', 'phone_number', 'bio', 'avatar']
+        
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_type', 'phone_number', 'bio', 'avatar']
+        read_only_fields = ['id', 'username', 'email', 'user_type']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -95,7 +101,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
-        fields = ['id', 'title', 'description', 'price', 'property_type', 'location', 'tags', 'image', 'image_url', 'broker', 'is_published', 'created_at']
+        fields = ['id', 'title', 'description', 'price', 'property_type', 'location', 'bedrooms', 'bathrooms', 'area_sqm', 'tags', 'image', 'image_url', 'broker', 'is_published', 'created_at']
         extra_kwargs = {
             'image': {'write_only': True}
         }

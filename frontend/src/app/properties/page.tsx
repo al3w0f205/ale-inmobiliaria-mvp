@@ -13,6 +13,9 @@ export default function Home() {
   const [searchLoc, setSearchLoc] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterPrice, setFilterPrice] = useState('');
+  const [filterBedrooms, setFilterBedrooms] = useState('');
+  const [filterBathrooms, setFilterBathrooms] = useState('');
+  const [filterArea, setFilterArea] = useState('');
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +26,9 @@ export default function Home() {
       if (params.get('search')) setSearchLoc(params.get('search')!);
       if (params.get('type')) setFilterType(params.get('type')!);
       if (params.get('max_price')) setFilterPrice(params.get('max_price')!);
+      if (params.get('min_bedrooms')) setFilterBedrooms(params.get('min_bedrooms')!);
+      if (params.get('min_bathrooms')) setFilterBathrooms(params.get('min_bathrooms')!);
+      if (params.get('min_area')) setFilterArea(params.get('min_area')!);
     }
   }, []);
 
@@ -33,6 +39,9 @@ export default function Home() {
         if (searchLoc) queryParams.append('search', searchLoc);
         if (filterType) queryParams.append('type', filterType);
         if (filterPrice) queryParams.append('max_price', filterPrice);
+        if (filterBedrooms) queryParams.append('min_bedrooms', filterBedrooms);
+        if (filterBathrooms) queryParams.append('min_bathrooms', filterBathrooms);
+        if (filterArea) queryParams.append('min_area', filterArea);
 
         const newUrl = `${window.location.pathname}?${queryParams.toString()}`;
         window.history.replaceState({}, '', newUrl);
@@ -53,7 +62,7 @@ export default function Home() {
     };
 
     fetchProperties();
-  }, [searchLoc, filterType, filterPrice]);
+  }, [searchLoc, filterType, filterPrice, filterBedrooms, filterBathrooms, filterArea]);
 
   const filteredProperties = properties; // Filtering is now done on the backend!
 
@@ -97,6 +106,37 @@ export default function Home() {
                 <option value="100000">$100,000</option>
                 <option value="200000">$200,000</option>
               </select>
+              <select 
+                className="px-5 py-3 rounded-2xl border border-border bg-background text-sm font-semibold focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all cursor-pointer shadow-sm appearance-none"
+                value={filterBedrooms}
+                onChange={e => setFilterBedrooms(e.target.value)}
+              >
+                <option value="">Habitaciones</option>
+                <option value="1">1+ hab</option>
+                <option value="2">2+ hab</option>
+                <option value="3">3+ hab</option>
+                <option value="4">4+ hab</option>
+              </select>
+              <select 
+                className="px-5 py-3 rounded-2xl border border-border bg-background text-sm font-semibold focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all cursor-pointer shadow-sm appearance-none"
+                value={filterBathrooms}
+                onChange={e => setFilterBathrooms(e.target.value)}
+              >
+                <option value="">Baños</option>
+                <option value="1">1+ baños</option>
+                <option value="2">2+ baños</option>
+                <option value="3">3+ baños</option>
+              </select>
+              <select 
+                className="px-5 py-3 rounded-2xl border border-border bg-background text-sm font-semibold focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all cursor-pointer shadow-sm appearance-none"
+                value={filterArea}
+                onChange={e => setFilterArea(e.target.value)}
+              >
+                <option value="">Área (m²)</option>
+                <option value="50">50+ m²</option>
+                <option value="100">100+ m²</option>
+                <option value="200">200+ m²</option>
+              </select>
             </div>
           </div>
 
@@ -125,6 +165,12 @@ export default function Home() {
                         
                         <p className="text-sm text-muted line-clamp-2 leading-relaxed flex-1 font-medium">{prop.description}</p>
                         
+                        <div className="flex items-center gap-4 mt-4 text-xs font-semibold text-muted">
+                          {prop.bedrooms > 0 && <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>{prop.bedrooms} hab</span>}
+                          {prop.bathrooms > 0 && <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>{prop.bathrooms} ba</span>}
+                          {prop.area_sqm > 0 && <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>{prop.area_sqm} m²</span>}
+                        </div>
+
                         <div className="flex items-end justify-between mt-6 pt-4 border-t border-border/50">
                           <div>
                             <span className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Precio</span>

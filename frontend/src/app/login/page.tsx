@@ -72,13 +72,12 @@ export default function LoginPage() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-xs font-bold text-muted uppercase tracking-widest">Contraseña</label>
-              <button 
-                type="button"
-                onClick={() => alert('La función de recuperación de contraseña estará disponible próximamente.')}
+              <Link 
+                href="/forgot-password"
                 className="text-brand hover:text-brand-hover text-xs font-bold transition-colors"
               >
                 ¿Olvidaste tu clave?
-              </button>
+              </Link>
             </div>
             <input 
               type="password" 

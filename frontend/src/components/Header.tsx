@@ -7,6 +7,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export default function Header() {
   const [username, setUsername] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -19,8 +20,10 @@ export default function Header() {
         if (res.ok) {
           const data = await res.json();
           setUsername(data.username);
+          setAvatar(data.avatar);
         } else {
           setUsername(null);
+          setAvatar(null);
         }
       } catch (err) {
         setUsername(null);
@@ -82,8 +85,8 @@ export default function Header() {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-muted/10 transition-all border border-transparent hover:border-border active:scale-95"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-light to-brand/20 text-brand flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white">
-                {username.charAt(0).toUpperCase()}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-light to-brand/20 text-brand flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white overflow-hidden">
+                {avatar ? <img src={avatar} alt={username} className="w-full h-full object-cover" /> : username.charAt(0).toUpperCase()}
               </div>
               <span className="text-sm font-semibold text-foreground hidden sm:block">{username}</span>
               <svg className={`w-4 h-4 text-muted transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,6 +110,16 @@ export default function Header() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                     Mi Dashboard
+                  </Link>
+                  <Link 
+                    href="/dashboard/profile"
+                    className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-muted hover:text-foreground hover:bg-muted/10 rounded-xl transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Mi Perfil
                   </Link>
                   <Link 
                     href="/publish"

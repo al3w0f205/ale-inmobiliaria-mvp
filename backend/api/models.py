@@ -20,6 +20,8 @@ class User(AbstractUser):
     
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default=IS_CLIENT)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True, help_text="Breve descripción del usuario/corredor")
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.username} ({self.get_user_type_display()})"
@@ -85,6 +87,10 @@ class Property(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPES, default='casa')
+    
+    bedrooms = models.IntegerField(default=0, help_text="Número de habitaciones")
+    bathrooms = models.DecimalField(max_digits=4, decimal_places=1, default=0, help_text="Número de baños")
+    area_sqm = models.DecimalField(max_digits=8, decimal_places=2, default=0, help_text="Área en metros cuadrados")
     
     # Image field (for phase 3, but define it now)
     image = models.ImageField(upload_to='properties/', null=True, blank=True)
