@@ -70,7 +70,7 @@ function RealPOIs({ lat, lng, propId, isActive }: { lat: number, lng: number, pr
       .then(res => res.json())
       .then(data => setPois(data))
       .catch(err => console.error("Error fetching POIs", err));
-  }, [lat, lng, isActive]);
+  }, [lat, lng, isActive, propId]);
 
   if (!isActive) return null;
 

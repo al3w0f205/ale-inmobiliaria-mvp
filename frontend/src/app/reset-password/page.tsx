@@ -120,6 +120,7 @@ function ResetPasswordForm() {
           </button>
         </form>
       </div>
+    </div>
   );
 }
 
