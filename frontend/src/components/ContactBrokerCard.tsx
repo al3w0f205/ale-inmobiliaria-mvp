@@ -68,7 +68,7 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
     setLoginError('');
     setIsLoggingIn(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: loginUsername, password: loginPassword }),
