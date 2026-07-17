@@ -30,6 +30,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fe-_$5l(0qen&j_1md8#qp@pl4
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'mvp.rondira.com,localhost,127.0.0.1').split(',')
+if 'backend' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('backend')
 
 
 # Application definition
