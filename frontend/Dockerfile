@@ -18,6 +18,7 @@ COPY . .
 
 # Next.js telemetry is disabled during build to save memory/cpu
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_PUBLIC_API_URL /api
 
 RUN npm run build
 
