@@ -2,21 +2,25 @@
 const nextConfig = {
   output: 'standalone',
   async rewrites() {
+    const backendUrl = process.env.INTERNAL_API_URL || 'http://backend:8000/api';
+    // Remove trailing /api to construct base URL
+    const backendBase = backendUrl.replace(/\/api$/, '') || 'http://backend:8000';
     return [
       {
         source: '/api/:path*',
-        destination: 'http://backend:8000/api/:path*', 
+        destination: `${backendBase}/api/:path*`, 
       },
       {
         source: '/media/:path*',
-        destination: 'http://backend:8000/media/:path*',
+        destination: `${backendBase}/media/:path*`,
       },
       {
         source: '/ws/:path*',
-        destination: 'http://backend:8000/ws/:path*',
+        destination: `${backendBase}/ws/:path*`,
       },
     ]
   },
 };
 
 export default nextConfig;
+
