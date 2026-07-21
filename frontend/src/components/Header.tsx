@@ -86,7 +86,7 @@ export default function Header() {
           </Link>
         ) : (
           <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-brand transition-colors hidden md:block">
-            Soy Corredor
+            Portal de Corredores
           </Link>
         )}
         {username ? (
