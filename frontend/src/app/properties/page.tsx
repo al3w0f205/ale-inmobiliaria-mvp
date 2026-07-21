@@ -46,8 +46,10 @@ export default function Home() {
         const newUrl = `${window.location.pathname}?${queryParams.toString()}`;
         window.history.replaceState({}, '', newUrl);
 
-        const host = typeof window === 'undefined' ? 'http://backend:8000' : '';
-        const res = await fetch(`${host}${process.env.NEXT_PUBLIC_API_URL}/properties?${queryParams.toString()}`);
+        const apiBase = typeof window === 'undefined'
+          ? (process.env.INTERNAL_API_URL || 'http://backend-api:8000/api')
+          : (process.env.NEXT_PUBLIC_API_URL || '/api');
+        const res = await fetch(`${apiBase}/properties/?${queryParams.toString()}`);
         if (res.ok) {
           const data = await res.json();
           setProperties(data);

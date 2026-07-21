@@ -8,7 +8,7 @@ export default function AdminPaymentsTable() {
 
   const fetchPayments = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -28,7 +28,7 @@ export default function AdminPaymentsTable() {
 
   const handleAction = async (id: number, action: 'approve' | 'reject') => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${id}/${action}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${id}/${action}/`, {
         method: 'POST',
         credentials: 'include'
       });

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import AdminPaymentsTable from '@/components/AdminPaymentsTable';
 import {
   AreaChart,
   Area,
@@ -200,6 +201,11 @@ export default function AdminDashboardPage() {
               </div>
             )}
           </div>
+        </section>
+
+        {/* Pagos Recientes */}
+        <section className="mt-12">
+          <AdminPaymentsTable />
         </section>
       </main>
     </div>
