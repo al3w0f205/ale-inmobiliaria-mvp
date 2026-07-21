@@ -22,6 +22,16 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     bio = models.TextField(blank=True, null=True, help_text="Breve descripción del usuario/corredor")
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    
+    # Nuevos campos para perfil avanzado y verificación
+    cedula = models.CharField(max_length=15, blank=True, null=True)
+    identity_verified = models.BooleanField(default=False)
+    whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
+    instagram_username = models.CharField(max_length=50, blank=True, null=True)
+    facebook_url = models.CharField(max_length=255, blank=True, null=True)
+    company_name = models.CharField(max_length=100, blank=True, null=True)
+    company_logo = models.ImageField(upload_to='logos/', blank=True, null=True)
+    office_address = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.username} ({self.get_user_type_display()})"

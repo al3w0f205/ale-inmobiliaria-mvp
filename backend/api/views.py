@@ -440,6 +440,8 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             'email': u.email,
             'user_type': u.user_type,
             'is_active': u.is_active,
+            'cedula': u.cedula,
+            'identity_verified': u.identity_verified,
             'date_joined': u.date_joined.strftime('%d/%m/%Y') if u.date_joined else ''
         } for u in users_qs]
         return Response(data)
@@ -452,6 +454,13 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         u.is_active = not u.is_active
         u.save()
         return Response({'status': 'ok', 'is_active': u.is_active})
+
+    @action(detail=True, methods=['post'])
+    def toggle_user_verification(self, request, pk=None):
+        u = User.objects.get(pk=pk)
+        u.identity_verified = not u.identity_verified
+        u.save()
+        return Response({'status': 'ok', 'identity_verified': u.identity_verified})
 
     @action(detail=False, methods=['get'])
     def properties(self, request):

@@ -138,6 +138,21 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleToggleUserVerification = async (id: number) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${id}/toggle_user_verification/`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(users.map(u => u.id === id ? { ...u, identity_verified: data.identity_verified } : u));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-background selection:bg-brand/20 selection:text-brand">
@@ -333,9 +348,11 @@ export default function AdminDashboardPage() {
                     <thead className="text-xs text-muted uppercase bg-background border-b border-border">
                       <tr>
                         <th className="px-6 py-5 font-black tracking-widest">Usuario / Email</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Cédula</th>
                         <th className="px-6 py-5 font-black tracking-widest">Rol</th>
                         <th className="px-6 py-5 font-black tracking-widest">Fecha Registro</th>
                         <th className="px-6 py-5 font-black tracking-widest">Estado</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Verificación</th>
                         <th className="px-6 py-5 font-black tracking-widest text-right">Acciones</th>
                       </tr>
                     </thead>
@@ -345,6 +362,9 @@ export default function AdminDashboardPage() {
                           <td className="px-6 py-5">
                             <span className="block font-black text-foreground">{u.username}</span>
                             <span className="text-xs text-muted font-bold font-mono tracking-wider">{u.email}</span>
+                          </td>
+                          <td className="px-6 py-5 font-bold text-foreground">
+                            {u.cedula || 'N/A'}
                           </td>
                           <td className="px-6 py-5 font-bold text-muted capitalize">
                             {u.user_type === 'broker' ? 'Corredor' : 'Cliente'}
@@ -359,7 +379,14 @@ export default function AdminDashboardPage() {
                               {u.is_active ? 'Activo' : 'Desactivado'}
                             </span>
                           </td>
-                          <td className="px-6 py-5 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                          <td className="px-6 py-5">
+                            <span className={`px-3 py-1.5 text-xs font-black tracking-widest uppercase rounded-lg border ${
+                              u.identity_verified ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                            }`}>
+                              {u.identity_verified ? 'Verificado' : 'Sin Verificar'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-right opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
                             <button 
                               onClick={() => handleToggleUserActive(u.id)}
                               className={`px-4 py-2 text-xs font-black uppercase tracking-widest border rounded-xl transition-all active:scale-95 ${
@@ -368,12 +395,20 @@ export default function AdminDashboardPage() {
                             >
                               {u.is_active ? 'Desactivar' : 'Activar'}
                             </button>
+                            <button 
+                              onClick={() => handleToggleUserVerification(u.id)}
+                              className={`px-4 py-2 text-xs font-black uppercase tracking-widest border rounded-xl transition-all active:scale-95 ${
+                                u.identity_verified ? 'text-yellow-600 bg-yellow-500/10 hover:bg-yellow-500 hover:text-white border-yellow-500/20' : 'text-green-500 bg-green-500/10 hover:bg-green-50 hover:text-white border-green-500/20'
+                              }`}
+                            >
+                              {u.identity_verified ? 'Desverificar' : 'Verificar'}
+                            </button>
                           </td>
                         </tr>
                       ))}
                       {users.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="px-6 py-8 text-center text-muted">
+                          <td colSpan={7} className="px-6 py-8 text-center text-muted">
                             No hay usuarios registrados.
                           </td>
                         </tr>

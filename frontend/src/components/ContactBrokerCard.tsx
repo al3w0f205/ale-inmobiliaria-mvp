@@ -19,9 +19,9 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
   const router = useRouter();
 
   const executeWhatsApp = () => {
-    const phone = broker?.phone_number || "593999999999";
+    const phone = broker?.whatsapp_number || broker?.phone || "593999999999";
     const text = encodeURIComponent(`Hola, vi la propiedad "${propertyTitle}" en el MVP Inmobiliario y quisiera más información.`);
-    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+    window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${text}`, '_blank');
   };
 
   const [loggedInUsername, setLoggedInUsername] = useState<string | null>(null);
@@ -124,22 +124,62 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
 
   return (
     <>
-      <div className="flex items-center gap-3 mt-3 mb-5">
-        <div className="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center text-brand font-bold text-lg">
-          {broker?.name?.charAt(0) || broker?.username?.charAt(0) || 'C'}
-        </div>
-        <div>
-          <p className="font-bold">{broker?.name || broker?.username || 'Corredor Anónimo'}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-sm text-muted">Agente Verificado</span>
-            <span className="text-muted/30 text-xs">•</span>
-            <div className="flex items-center text-yellow-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <span className="text-xs font-bold text-foreground ml-1">{broker?.average_rating > 0 ? broker.average_rating : 'Nuevo'}</span>
-              <span className="text-xs text-muted ml-0.5">{broker?.review_count > 0 ? `(${broker.review_count})` : ''}</span>
+      <div className="flex flex-col gap-4 mt-3 mb-5 p-4 rounded-2xl bg-background/30 border border-border/50">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 rounded-full overflow-hidden bg-brand-light flex items-center justify-center text-brand font-bold text-xl border border-border shrink-0">
+            {broker?.avatar ? (
+              <img src={broker.avatar} alt={broker.name || broker.username} className="w-full h-full object-cover" />
+            ) : (
+              (broker?.name?.charAt(0) || broker?.username?.charAt(0) || 'C').toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-foreground flex items-center gap-1.5 truncate">
+              {broker?.name || broker?.username || 'Corredor Anónimo'}
+              {broker?.identity_verified && (
+                <svg className="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24">
+                  <title>Identidad Verificada</title>
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              )}
+            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-black tracking-wider uppercase border ${
+                broker?.identity_verified ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-muted/10 text-muted border-border'
+              }`}>
+                {broker?.identity_verified ? 'Verificado' : 'Registrado'}
+              </span>
+              <span className="text-muted/30 text-xs">•</span>
+              <div className="flex items-center text-yellow-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span className="text-xs font-bold text-foreground ml-1">{broker?.average_rating > 0 ? broker.average_rating : 'Nuevo'}</span>
+                <span className="text-xs text-muted ml-0.5">{broker?.review_count > 0 ? `(${broker.review_count})` : ''}</span>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Detalles de la Empresa */}
+        {(broker?.company_name || broker?.office_address) && (
+          <div className="pt-3 border-t border-border/50 text-xs space-y-2 text-muted">
+            {broker?.company_name && (
+              <div className="flex items-center gap-2">
+                {broker?.company_logo ? (
+                  <img src={broker.company_logo} alt={broker.company_name} className="w-5 h-5 rounded object-contain border border-border" />
+                ) : (
+                  <svg className="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                )}
+                <span className="font-semibold text-foreground">{broker.company_name}</span>
+              </div>
+            )}
+            {broker?.office_address && (
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 text-muted shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <span className="leading-snug">{broker.office_address}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <button 
@@ -152,11 +192,40 @@ export default function ContactBrokerCard({ broker, propertyId, propertyTitle }:
 
       <button 
         onClick={handleSendMessageClick}
-        className="w-full bg-surface border border-border text-foreground font-semibold py-3.5 rounded-xl hover:bg-background transition-all active:scale-95 flex items-center justify-center gap-2"
+        className="w-full bg-surface border border-border text-foreground font-semibold py-3.5 rounded-xl hover:bg-background transition-all active:scale-95 flex items-center justify-center gap-2 mb-4"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         Mensaje Interno
       </button>
+
+      {/* Redes Sociales del Corredor */}
+      {(broker?.instagram_username || broker?.facebook_url) && (
+        <div className="flex items-center justify-center gap-4 py-2 text-muted border-t border-border/50">
+          <span className="text-[11px] font-bold uppercase tracking-wider">Redes:</span>
+          {broker?.instagram_username && (
+            <a 
+              href={`https://instagram.com/${broker.instagram_username}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg hover:bg-muted/10 hover:text-pink-600 transition-colors"
+              title="Instagram"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+          )}
+          {broker?.facebook_url && (
+            <a 
+              href={broker.facebook_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg hover:bg-muted/10 hover:text-blue-600 transition-colors"
+              title="Facebook"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Modal */}
       {isModalOpen && (

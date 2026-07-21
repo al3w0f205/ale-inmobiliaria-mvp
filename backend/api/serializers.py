@@ -41,8 +41,12 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'user_type', 'phone_number', 'bio', 'avatar', 'is_superuser', 'is_staff']
-        read_only_fields = ['id', 'username', 'email', 'user_type', 'is_superuser', 'is_staff']
+        fields = [
+            'id', 'username', 'email', 'user_type', 'phone_number', 'bio', 'avatar',
+            'is_superuser', 'is_staff', 'cedula', 'identity_verified', 'whatsapp_number',
+            'instagram_username', 'facebook_url', 'company_name', 'company_logo', 'office_address'
+        ]
+        read_only_fields = ['id', 'username', 'email', 'user_type', 'is_superuser', 'is_staff', 'identity_verified']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -80,7 +84,11 @@ class BrokerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'phone', 'average_rating', 'review_count']
+        fields = [
+            'id', 'name', 'phone', 'avatar', 'average_rating', 'review_count',
+            'identity_verified', 'whatsapp_number', 'instagram_username', 'facebook_url',
+            'company_name', 'company_logo', 'office_address'
+        ]
 
     def get_average_rating(self, obj):
         from django.db.models import Avg
