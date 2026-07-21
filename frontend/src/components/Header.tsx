@@ -8,6 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 export default function Header() {
   const [username, setUsername] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -21,12 +22,15 @@ export default function Header() {
           const data = await res.json();
           setUsername(data.username);
           setAvatar(data.avatar);
+          setIsAdmin(data.is_superuser || data.is_staff || false);
         } else {
           setUsername(null);
           setAvatar(null);
+          setIsAdmin(false);
         }
       } catch (err) {
         setUsername(null);
+        setIsAdmin(false);
       }
     };
     
@@ -76,9 +80,15 @@ export default function Header() {
         </Link>
       </div>
       <nav className="flex items-center gap-5">
-        <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-brand transition-colors hidden md:block">
-          Soy Corredor
-        </Link>
+        {isAdmin ? (
+          <Link href="/admin/dashboard" className="text-sm font-medium text-muted hover:text-brand transition-colors hidden md:block">
+            Panel Admin
+          </Link>
+        ) : (
+          <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-brand transition-colors hidden md:block">
+            Soy Corredor
+          </Link>
+        )}
         {username ? (
           <div className="relative" ref={dropdownRef}>
             <button 
@@ -98,11 +108,11 @@ export default function Header() {
               <div className="absolute right-0 mt-3 w-56 bg-surface rounded-2xl shadow-2xl border border-border/60 overflow-hidden z-50 py-1 origin-top-right animate-in fade-in zoom-in-95 duration-200">
                 <div className="px-4 py-3 border-b border-border/60 bg-muted/5">
                   <p className="text-sm font-bold text-foreground truncate">{username}</p>
-                  <p className="text-xs text-brand font-medium mt-0.5">Cuenta Activa</p>
+                  <p className="text-xs text-brand font-medium mt-0.5">{isAdmin ? 'Administrador' : 'Cuenta Activa'}</p>
                 </div>
                 <div className="p-1.5 space-y-0.5">
                   <Link 
-                    href="/dashboard"
+                    href={isAdmin ? "/admin/dashboard" : "/dashboard"}
                     className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-muted hover:text-foreground hover:bg-muted/10 rounded-xl transition-colors"
                     onClick={() => setDropdownOpen(false)}
                   >
