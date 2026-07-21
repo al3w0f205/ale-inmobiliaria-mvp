@@ -35,8 +35,8 @@ export default function AdminDashboardPage() {
       try {
         const [resMe, resStats, resChart] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/`, { credentials: 'include' }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin_dashboard/stats/`, { credentials: 'include' }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin_dashboard/chart_data/`, { credentials: 'include' })
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/stats/`, { credentials: 'include' }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/chart_data/`, { credentials: 'include' })
         ]);
 
         if (resMe.ok) {
