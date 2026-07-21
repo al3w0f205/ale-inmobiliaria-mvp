@@ -51,6 +51,18 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#070913] text-foreground flex flex-col selection:bg-brand/20 selection:text-brand relative overflow-x-hidden">
       
+      {/* Header Global Persistente */}
+      <header className="sticky top-0 z-50 bg-[#070913]/70 backdrop-blur-xl border-b border-white/5 py-4 px-6 md:px-12 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-lg shadow-lg shadow-brand/35">L</div>
+          <span className="text-xl font-black text-white tracking-tight">LibreCasa</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <Link href="/login" className="text-xs font-bold text-white/80 hover:text-white uppercase tracking-widest transition-colors">Portal</Link>
+          <Link href="/properties" className="px-5 py-2.5 bg-brand text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-brand-light hover:text-foreground transition-all shadow-lg shadow-brand/10 hover:shadow-brand/20 active:scale-95">Catálogo</Link>
+        </div>
+      </header>
+
       {/* Luces de Fondo (Aurora) */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand/5 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute top-[40vh] left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[140px] pointer-events-none"></div>
@@ -63,19 +75,8 @@ export default function LandingPage() {
       <main className="w-full max-w-[1600px] mx-auto px-4 py-8 md:px-8 md:py-12 flex-none flex flex-col lg:grid lg:grid-cols-12 gap-8 items-stretch relative z-10">
         
         {/* COLUMNA IZQUIERDA: HERO CARD */}
-        <section className="lg:col-span-5 flex flex-col justify-between rounded-[2.5rem] overflow-hidden relative border border-white/10 min-h-[70vh] lg:min-h-[85vh] bg-cover bg-center shadow-2xl group" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80')" }}>
+        <section className="lg:col-span-5 flex flex-col justify-end rounded-[2.5rem] overflow-hidden relative border border-white/10 min-h-[70vh] lg:min-h-[85vh] bg-cover bg-center shadow-2xl group" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80')" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-black/95 z-0"></div>
-          
-          <header className="relative z-10 p-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-lg shadow-lg shadow-brand/35">L</div>
-              <span className="text-xl font-black text-white tracking-tight">LibreCasa</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-xs font-bold text-white/80 hover:text-white uppercase tracking-widest transition-colors">Portal</Link>
-              <Link href="/properties" className="px-5 py-2.5 bg-brand text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-brand-light hover:text-foreground transition-all shadow-lg shadow-brand/10 hover:shadow-brand/20 active:scale-95">Catálogo</Link>
-            </div>
-          </header>
 
           <div className="relative z-10 p-8 md:p-12 space-y-6 mt-auto">
             <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white leading-none">
