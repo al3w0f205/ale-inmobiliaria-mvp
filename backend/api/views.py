@@ -431,6 +431,50 @@ class AdminDashboardViewSet(viewsets.ViewSet):
 
         return Response(chart_data)
 
+    @action(detail=False, methods=['get'])
+    def users(self, request):
+        users_qs = User.objects.all().order_by('-date_joined')
+        data = [{
+            'id': u.id,
+            'username': u.username,
+            'email': u.email,
+            'user_type': u.user_type,
+            'is_active': u.is_active,
+            'date_joined': u.date_joined.strftime('%d/%m/%Y') if u.date_joined else ''
+        } for u in users_qs]
+        return Response(data)
+
+    @action(detail=True, methods=['post'])
+    def toggle_user_active(self, request, pk=None):
+        u = User.objects.get(pk=pk)
+        if u == request.user:
+            return Response({'error': 'No puedes desactivarte a ti mismo'}, status=status.HTTP_400_BAD_REQUEST)
+        u.is_active = not u.is_active
+        u.save()
+        return Response({'status': 'ok', 'is_active': u.is_active})
+
+    @action(detail=False, methods=['get'])
+    def properties(self, request):
+        props_qs = Property.objects.all().select_related('broker').order_by('-created_at')
+        data = [{
+            'id': p.id,
+            'title': p.title,
+            'price': float(p.price),
+            'property_type': p.property_type,
+            'is_published': p.is_published,
+            'views_count': p.views_count,
+            'broker': p.broker.email if p.broker else 'Sin corredor',
+            'created_at': p.created_at.strftime('%d/%m/%Y') if p.created_at else ''
+        } for p in props_qs]
+        return Response(data)
+
+    @action(detail=True, methods=['post'])
+    def toggle_property_published(self, request, pk=None):
+        p = Property.objects.get(pk=pk)
+        p.is_published = not p.is_published
+        p.save()
+        return Response({'status': 'ok', 'is_published': p.is_published})
+
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 

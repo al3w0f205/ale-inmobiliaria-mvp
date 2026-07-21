@@ -29,6 +29,13 @@ export default function AdminDashboardPage() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para pestañas y gestión
+  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'users' | 'properties'>('overview');
+  const [users, setUsers] = useState<any[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [propertiesLoading, setPropertiesLoading] = useState(false);
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -60,6 +67,76 @@ export default function AdminDashboardPage() {
     };
     fetchAdminData();
   }, [router]);
+
+  // Carga de datos de pestañas activas
+  useEffect(() => {
+    if (activeTab === 'users') {
+      const fetchUsers = async () => {
+        setUsersLoading(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/users/`, { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            setUsers(data);
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setUsersLoading(false);
+        }
+      };
+      fetchUsers();
+    } else if (activeTab === 'properties') {
+      const fetchProperties = async () => {
+        setPropertiesLoading(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/properties/`, { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            setProperties(data);
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setPropertiesLoading(false);
+        }
+      };
+      fetchProperties();
+    }
+  }, [activeTab]);
+
+  const handleToggleUserActive = async (id: number) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${id}/toggle_user_active/`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(users.map(u => u.id === id ? { ...u, is_active: data.is_active } : u));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Error al modificar estado de usuario');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleTogglePropertyPublished = async (id: number) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${id}/toggle_property_published/`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProperties(properties.map(p => p.id === id ? { ...p, is_published: data.is_published } : p));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   if (loading) {
     return (
@@ -96,117 +173,290 @@ export default function AdminDashboardPage() {
           <p className="text-muted text-lg font-medium">Control general, ingresos y crecimiento de usuarios.</p>
         </header>
 
-        {/* KPIs Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {/* Ingresos */}
-          <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl -translate-y-10 translate-x-10"></div>
-            <div className="relative z-10">
-              <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Ingresos Totales (30d)</p>
-              <p className="text-5xl font-black tracking-tighter text-brand">${stats.total_revenue}</p>
-            </div>
-          </div>
-          
-          {/* Suscripciones */}
-          <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
-            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Suscripciones Activas</p>
-            <p className="text-5xl font-black tracking-tighter">{stats.active_subscriptions}</p>
-          </div>
+        {/* Tabs Navigation */}
+        <div className="flex border-b border-border mb-8 gap-6 text-sm font-bold overflow-x-auto pb-1">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className={`pb-4 border-b-2 transition-all ${activeTab === 'overview' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-foreground'}`}
+          >
+            Resumen
+          </button>
+          <button 
+            onClick={() => setActiveTab('payments')}
+            className={`pb-4 border-b-2 transition-all ${activeTab === 'payments' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-foreground'}`}
+          >
+            Pagos
+          </button>
+          <button 
+            onClick={() => setActiveTab('users')}
+            className={`pb-4 border-b-2 transition-all ${activeTab === 'users' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-foreground'}`}
+          >
+            Usuarios
+          </button>
+          <button 
+            onClick={() => setActiveTab('properties')}
+            className={`pb-4 border-b-2 transition-all ${activeTab === 'properties' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-foreground'}`}
+          >
+            Propiedades
+          </button>
+        </div>
 
-          {/* Pagos Pendientes */}
-          <div className={`p-8 rounded-[2.5rem] border shadow-2xl ${stats.pending_payments > 0 ? 'bg-[#f59e0b]/10 border-[#f59e0b]/30 shadow-[#f59e0b]/10' : 'bg-surface border-border shadow-brand/5'}`}>
-            <p className={`text-sm font-bold uppercase tracking-widest mb-1 ${stats.pending_payments > 0 ? 'text-[#b45309]' : 'text-muted'}`}>Pagos Pendientes</p>
-            <p className={`text-5xl font-black tracking-tighter ${stats.pending_payments > 0 ? 'text-[#b45309]' : 'text-foreground'}`}>{stats.pending_payments}</p>
-          </div>
+        {activeTab === 'overview' && (
+          <>
+            {/* KPIs Grid */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {/* Ingresos */}
+              <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl -translate-y-10 translate-x-10"></div>
+                <div className="relative z-10">
+                  <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Ingresos Totales (30d)</p>
+                  <p className="text-5xl font-black tracking-tighter text-brand">${stats.total_revenue}</p>
+                </div>
+              </div>
+              
+              {/* Suscripciones */}
+              <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
+                <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Suscripciones Activas</p>
+                <p className="text-5xl font-black tracking-tighter">{stats.active_subscriptions}</p>
+              </div>
 
-          {/* Corredores */}
-          <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
-            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Corredores Registrados</p>
-            <p className="text-5xl font-black tracking-tighter">{stats.total_brokers}</p>
-          </div>
+              {/* Pagos Pendientes */}
+              <div className={`p-8 rounded-[2.5rem] border shadow-2xl ${stats.pending_payments > 0 ? 'bg-[#f59e0b]/10 border-[#f59e0b]/30 shadow-[#f59e0b]/10' : 'bg-surface border-border shadow-brand/5'}`}>
+                <p className={`text-sm font-bold uppercase tracking-widest mb-1 ${stats.pending_payments > 0 ? 'text-[#b45309]' : 'text-muted'}`}>Pagos Pendientes</p>
+                <p className={`text-5xl font-black tracking-tighter ${stats.pending_payments > 0 ? 'text-[#b45309]' : 'text-foreground'}`}>{stats.pending_payments}</p>
+              </div>
 
-          {/* Clientes */}
-          <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
-            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Clientes Registrados</p>
-            <p className="text-5xl font-black tracking-tighter">{stats.total_clients}</p>
-          </div>
+              {/* Corredores */}
+              <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
+                <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Corredores Registrados</p>
+                <p className="text-5xl font-black tracking-tighter">{stats.total_brokers}</p>
+              </div>
 
-          {/* Propiedades */}
-          <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
-            <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Propiedades Publicadas</p>
-            <p className="text-5xl font-black tracking-tighter">{stats.published_properties}</p>
-          </div>
-        </section>
+              {/* Clientes */}
+              <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
+                <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Clientes Registrados</p>
+                <p className="text-5xl font-black tracking-tighter">{stats.total_clients}</p>
+              </div>
 
-        {/* Charts Section */}
-        <section className="bg-surface border border-border rounded-[2.5rem] p-8 shadow-2xl shadow-brand/5">
-          <div className="mb-8 flex items-center justify-between">
-             <div>
-               <h2 className="text-2xl font-black tracking-tight">Evolución de Ingresos</h2>
-               <p className="text-muted font-medium text-sm">Últimos 30 días</p>
-             </div>
-          </div>
-          
-          <div className="h-[400px] w-full">
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--brand)" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="var(--brand)" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="var(--muted)" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <YAxis 
-                    stroke="var(--muted)" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                    tickFormatter={(value) => `$${value}`}
-                  />
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'var(--surface)', 
-                      borderColor: 'var(--border)', 
-                      borderRadius: '1rem',
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
-                    }} 
-                    itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
-                    labelStyle={{ color: 'var(--muted)', marginBottom: '0.25rem' }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="var(--brand)" 
-                    strokeWidth={4}
-                    fillOpacity={1} 
-                    fill="url(#colorRevenue)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {/* Propiedades */}
+              <div className="p-8 rounded-[2.5rem] bg-surface border border-border shadow-2xl shadow-brand/5">
+                <p className="text-sm font-bold text-muted uppercase tracking-widest mb-1">Propiedades Publicadas</p>
+                <p className="text-5xl font-black tracking-tighter">{stats.published_properties}</p>
+              </div>
+            </section>
+
+            {/* Charts Section */}
+            <section className="bg-surface border border-border rounded-[2.5rem] p-8 shadow-2xl shadow-brand/5">
+              <div className="mb-8 flex items-center justify-between">
+                 <div>
+                   <h2 className="text-2xl font-black tracking-tight">Evolución de Ingresos</h2>
+                   <p className="text-muted font-medium text-sm">Últimos 30 días</p>
+                 </div>
+              </div>
+              
+              <div className="h-[400px] w-full">
+                {chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--brand)" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="var(--brand)" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="var(--muted)" 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false} 
+                      />
+                      <YAxis 
+                        stroke="var(--muted)" 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickFormatter={(value) => `$${value}`}
+                      />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'var(--surface)', 
+                          borderColor: 'var(--border)', 
+                          borderRadius: '1rem',
+                          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
+                        }} 
+                        itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
+                        labelStyle={{ color: 'var(--muted)', marginBottom: '0.25rem' }}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="revenue" 
+                        stroke="var(--brand)" 
+                        strokeWidth={4}
+                        fillOpacity={1} 
+                        fill="url(#colorRevenue)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-muted border-2 border-dashed border-border rounded-2xl">
+                    <svg className="w-12 h-12 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p className="font-semibold">No hay datos de ingresos en este periodo.</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeTab === 'payments' && (
+          <section>
+            <AdminPaymentsTable />
+          </section>
+        )}
+
+        {activeTab === 'users' && (
+          <section>
+            {usersLoading ? (
+              <div className="p-12 text-center text-muted animate-pulse">Cargando usuarios...</div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-muted border-2 border-dashed border-border rounded-2xl">
-                <svg className="w-12 h-12 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <p className="font-semibold">No hay datos de ingresos en este periodo.</p>
+              <div className="bg-surface/80 backdrop-blur-2xl border border-border rounded-[2rem] overflow-hidden shadow-2xl shadow-brand/5">
+                <div className="p-6 border-b border-border bg-background/50 flex justify-between items-center">
+                  <h3 className="text-xl font-black text-foreground tracking-tight">Gestión de Usuarios</h3>
+                  <span className="text-xs font-bold text-muted uppercase tracking-widest">{users.length} Cuentas</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-muted uppercase bg-background border-b border-border">
+                      <tr>
+                        <th className="px-6 py-5 font-black tracking-widest">Usuario / Email</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Rol</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Fecha Registro</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Estado</th>
+                        <th className="px-6 py-5 font-black tracking-widest text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {users.map((u) => (
+                        <tr key={u.id} className="hover:bg-background/80 transition-colors group">
+                          <td className="px-6 py-5">
+                            <span className="block font-black text-foreground">{u.username}</span>
+                            <span className="text-xs text-muted font-bold font-mono tracking-wider">{u.email}</span>
+                          </td>
+                          <td className="px-6 py-5 font-bold text-muted capitalize">
+                            {u.user_type === 'broker' ? 'Corredor' : 'Cliente'}
+                          </td>
+                          <td className="px-6 py-5 font-bold text-muted">
+                            {u.date_joined}
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className={`px-3 py-1.5 text-xs font-black tracking-widest uppercase rounded-lg border ${
+                              u.is_active ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+                            }`}>
+                              {u.is_active ? 'Activo' : 'Desactivado'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => handleToggleUserActive(u.id)}
+                              className={`px-4 py-2 text-xs font-black uppercase tracking-widest border rounded-xl transition-all active:scale-95 ${
+                                u.is_active ? 'text-red-500 bg-red-500/10 hover:bg-red-50 hover:text-white border-red-500/20' : 'text-green-500 bg-green-500/10 hover:bg-green-50 hover:text-white border-green-500/20'
+                              }`}
+                            >
+                              {u.is_active ? 'Desactivar' : 'Activar'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {users.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-8 text-center text-muted">
+                            No hay usuarios registrados.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Pagos Recientes */}
-        <section className="mt-12">
-          <AdminPaymentsTable />
-        </section>
+        {activeTab === 'properties' && (
+          <section>
+            {propertiesLoading ? (
+              <div className="p-12 text-center text-muted animate-pulse">Cargando propiedades...</div>
+            ) : (
+              <div className="bg-surface/80 backdrop-blur-2xl border border-border rounded-[2rem] overflow-hidden shadow-2xl shadow-brand/5">
+                <div className="p-6 border-b border-border bg-background/50 flex justify-between items-center">
+                  <h3 className="text-xl font-black text-foreground tracking-tight">Control de Inmuebles</h3>
+                  <span className="text-xs font-bold text-muted uppercase tracking-widest">{properties.length} Propiedades</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-muted uppercase bg-background border-b border-border">
+                      <tr>
+                        <th className="px-6 py-5 font-black tracking-widest">Propiedad</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Precio</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Creador (Email)</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Vistas</th>
+                        <th className="px-6 py-5 font-black tracking-widest">Estado</th>
+                        <th className="px-6 py-5 font-black tracking-widest text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {properties.map((p) => (
+                        <tr key={p.id} className="hover:bg-background/80 transition-colors group">
+                          <td className="px-6 py-5">
+                            <span className="block font-black text-foreground">{p.title}</span>
+                            <span className="text-xs text-muted font-bold font-mono tracking-wider capitalize">{p.property_type}</span>
+                          </td>
+                          <td className="px-6 py-5 font-black text-foreground text-lg">
+                            ${p.price}
+                          </td>
+                          <td className="px-6 py-5 font-bold text-muted">
+                            {p.broker}
+                          </td>
+                          <td className="px-6 py-5 font-bold text-muted">
+                            {p.views_count}
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className={`px-3 py-1.5 text-xs font-black tracking-widest uppercase rounded-lg border ${
+                              p.is_published ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                            }`}>
+                              {p.is_published ? 'Publicado' : 'Oculto'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => handleTogglePropertyPublished(p.id)}
+                              className={`px-4 py-2 text-xs font-black uppercase tracking-widest border rounded-xl transition-all active:scale-95 ${
+                                p.is_published ? 'text-yellow-600 bg-yellow-500/10 hover:bg-yellow-500 hover:text-white border-yellow-500/20' : 'text-green-500 bg-green-500/10 hover:bg-green-50 hover:text-white border-green-500/20'
+                              }`}
+                            >
+                              {p.is_published ? 'Ocultar' : 'Publicar'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {properties.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-8 text-center text-muted">
+                            No hay propiedades registradas.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
       </main>
     </div>
   );
