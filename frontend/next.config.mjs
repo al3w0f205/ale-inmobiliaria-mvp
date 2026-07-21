@@ -9,15 +9,15 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${backendBase}/api/:path*`, 
+        destination: `${backendBase}/api/:path*/`, 
       },
       {
         source: '/media/:path*',
-        destination: `${backendBase}/media/:path*`,
+        destination: `${backendBase}/media/:path*/`,
       },
       {
         source: '/ws/:path*',
-        destination: `${backendBase}/ws/:path*`,
+        destination: `${backendBase}/ws/:path*/`,
       },
     ]
   },
