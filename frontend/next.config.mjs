@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  trailingSlash: true,
   async rewrites() {
     const backendUrl = process.env.INTERNAL_API_URL || 'http://backend:8000/api';
     // Remove trailing /api to construct base URL

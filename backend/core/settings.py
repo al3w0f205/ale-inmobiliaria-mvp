@@ -67,7 +67,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Security Headers
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = os.getenv('DEBUG', 'True') == 'False'
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = os.getenv('DEBUG', 'True') == 'False'
 CSRF_COOKIE_SECURE = os.getenv('DEBUG', 'True') == 'False'
 SECURE_BROWSER_XSS_FILTER = True
