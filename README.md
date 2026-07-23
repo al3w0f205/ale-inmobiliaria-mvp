@@ -21,7 +21,7 @@ graph TD
 
 ---
 
-## 2. Diagramas de Flujo Clave
+## 2. Procesos Criticos de Datos y Seguridad
 
 ### Flujo de Publicacion de una Propiedad con Cache y Optimizacion
 
@@ -38,6 +38,14 @@ graph TD
     G --> H[Retorna Status 201 + GeoJSON]
 ```
 
+#### Detalles del Proceso de Datos:
+1.  **Validacion de Credenciales:** El servidor intercepta la peticion multipart/form-data y extrae el token JWT desde las cookies del navegador. Solo los usuarios con tipo de cuenta 'broker' e invitacion activa pueden proceder con la creacion de inmuebles.
+2.  **Procesamiento de Imagenes en Caliente:** Para prevenir la saturacion del almacenamiento fisico y optimizar la descarga en dispositivos moviles, el metodo `save()` del modelo `Property` intercepta la carga utilizando la libreria Pillow. Si la resolucion excede los 1200x800 pixeles, se redimensiona aplicando un remuestreo suavizado (LANCZOS). Luego se convierte a formato RGB y se comprime en formato JPEG optimizado al 75% de calidad, reduciendo el tamaño promedio de archivo de 5MB a ~250KB.
+3.  **Registro Geoespacial:** La ubicacion del inmueble se almacena utilizando el motor de datos espaciales PostGIS (tipo Geometry Point con SRID WGS 84), lo que permite indexar las coordenadas para busquedas de rango de proximidad ultrarrapidas a nivel de base de datos.
+4.  **Busting de Cache Selectivo:** En lugar de limpiar toda la base de datos de Redis (borrando consultas caras como los puntos de interes de OpenStreetMap), el sistema incrementa una variable `properties_cache_version`. Los listados subsiguientes leen la nueva clave de cache asociada a esta version, invalidando instantaneamente los datos antiguos unicamente para las consultas de propiedades.
+
+---
+
 ### Flujo de Autenticacion Segura mediante JWT con Cookies
 
 El sistema de autenticacion prescinde del almacenamiento de JWT en LocalStorage para evitar vulnerabilidades XSS, utilizando en su lugar cookies seguras configuradas desde el backend.
@@ -49,6 +57,16 @@ graph TD
     C --> D[Django inyecta cookies HttpOnly y Secure]
     D --> E[Retorna Status 200 OK y redirige]
 ```
+
+#### Detalles de la Arquitectura de Seguridad:
+1.  **Riesgo Mitigado (XSS vs CSRF):** Almacenar tokens de acceso en el `localStorage` del navegador es inseguro, ya que cualquier script JavaScript malicioso inyectado (XSS) podria leer y robar el token de autenticacion del usuario. Al utilizar cookies `HttpOnly`, se bloquea el acceso a los tokens desde cualquier script del lado del cliente.
+2.  **Politicas de Transmision Segura:**
+    *   **HttpOnly:** Protege los tokens de ataques de secuestro de sesion XSS, impidiendo que `document.cookie` lea la informacion.
+    *   **Secure:** Asegura que los tokens de acceso solo viajen sobre conexiones cifradas HTTPS.
+    *   **SameSite=Lax (o Strict):** Previene ataques de tipo falsificacion de peticion en sitios cruzados (CSRF) al restringir la transmision de cookies en llamadas originadas desde sitios de terceros no autorizados.
+3.  **Refresco Silencioso de Sesion:** El frontend lee la expiracion del Access Token. Cuando expira, realiza una llamada en segundo plano al endpoint de refresco utilizando la cookie segura del Refresh Token para obtener una nueva sesion sin requerir que el usuario vuelva a iniciar sesion manualmente.
+
+---
 
 ---
 
