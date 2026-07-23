@@ -19,3 +19,9 @@ frontend/.env.local
 .idea/
 .vscode/
 *.log
+
+# Raíz .env y cachés adicionales
+.env
+.pytest_cache/
+.eslintcache
+
