@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fe-_$5l(0qen&j_1md8#qp@pl44@^+(8lu%=iae1kx6*fyur48')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'mvp.rondira.com,localhost,127.0.0.1').split(',')
 if 'backend' not in ALLOWED_HOSTS:

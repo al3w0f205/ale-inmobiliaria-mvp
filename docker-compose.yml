@@ -13,6 +13,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-marketplace_secure_redis_pass}
     restart: unless-stopped
 
   backend:
@@ -27,7 +28,7 @@ services:
       - DB_NAME=${DB_NAME:-marketplace}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-marketplace_secure_redis_pass}@redis:6379/0
       - PAYPHONE_TOKEN=${PAYPHONE_TOKEN:-""}
     depends_on:
       - db

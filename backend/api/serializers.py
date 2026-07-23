@@ -6,7 +6,15 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 User = get_user_model()
 
+def validate_file_size(value):
+    if value and hasattr(value, 'size'):
+        limit = 5 * 1024 * 1024 # 5MB
+        if value.size > limit:
+            raise serializers.ValidationError('El archivo no puede pesar más de 5MB.')
+    return value
+
 class PaymentSerializer(serializers.ModelSerializer):
+    receipt_image = serializers.ImageField(required=False, validators=[validate_file_size])
     class Meta:
         model = Payment
         fields = ['id', 'amount', 'payment_method', 'status', 'transaction_id', 'receipt_image', 'created_at']
@@ -39,6 +47,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'user_type', 'phone_number', 'bio', 'avatar']
         
 class UserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False, validators=[validate_file_size])
+    company_logo = serializers.ImageField(required=False, validators=[validate_file_size])
     class Meta:
         model = User
         fields = [
@@ -48,6 +58,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'username', 'email', 'user_type', 'is_superuser', 'is_staff', 'identity_verified']
 
+from django.contrib.auth.password_validation import validate_password
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     broker_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -55,6 +67,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'password', 'email', 'user_type', 'phone_number', 'broker_code']
+        
+    def validate_password(self, value):
+        validate_password(value)
+        return value
         
     def validate(self, attrs):
         user_type = attrs.get('user_type', User.IS_CLIENT)
@@ -106,6 +122,7 @@ class PropertySerializer(serializers.ModelSerializer):
     broker = BrokerSerializer(read_only=True)
     location = GeometryField()
     image_url = serializers.SerializerMethodField()
+    image = serializers.ImageField(write_only=True, required=False, validators=[validate_file_size])
 
     class Meta:
         model = Property
