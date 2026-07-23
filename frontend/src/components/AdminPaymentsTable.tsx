@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Payment } from '../types';
 
 export default function AdminPaymentsTable() {
-  const [payments, setPayments] = useState<any[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Obtiene la lista de pagos del servidor de backend.
+   */
   const fetchPayments = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/`, {
@@ -16,7 +20,7 @@ export default function AdminPaymentsTable() {
         setPayments(data);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error al obtener los pagos de administración:', error);
     } finally {
       setLoading(false);
     }
@@ -26,6 +30,11 @@ export default function AdminPaymentsTable() {
     fetchPayments();
   }, []);
 
+  /**
+   * Aprueba o rechaza un pago específico.
+   * @param id Identificador único del pago
+   * @param action Acción a tomar (approve | reject)
+   */
   const handleAction = async (id: number, action: 'approve' | 'reject') => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${id}/${action}/`, {

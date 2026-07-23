@@ -17,6 +17,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 
 User = get_user_model()
 
@@ -169,8 +173,44 @@ class PropertyViewSet(viewsets.ModelViewSet):
             
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        # Obtener versión actual de la caché desde Redis
+        version = cache.get('properties_cache_version', 1)
+        
+        # Calcular clave única basada en query params y versión de la caché
+        query_params = request.GET.urlencode()
+        cache_key = f"properties_list:v{version}:{query_params}"
+        
+        data = cache.get(cache_key)
+        if data is None:
+            response = super().list(request, *args, **kwargs)
+            # Almacenar en caché por 5 minutos
+            cache.set(cache_key, response.data, 60 * 5)
+            return response
+            
+        return Response(data)
+
     def perform_create(self, serializer):
         serializer.save(broker=self.request.user)
+        self.invalidate_cache()
+
+    def perform_update(self, serializer):
+        serializer.save()
+        self.invalidate_cache()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        self.invalidate_cache()
+
+    def invalidate_cache(self):
+        """
+        Incrementa la versión de la caché de propiedades para invalidarla selectivamente.
+        """
+        try:
+            cache.incr('properties_cache_version')
+        except ValueError:
+            cache.set('properties_cache_version', 1, 60 * 60 * 24 * 30)
+
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -272,11 +312,11 @@ class PaymentViewSet(mixins.CreateModelMixin,
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Admins can see all payments
+        # Admins can see all payments with broker pre-fetched
         if self.request.user.is_staff or self.request.user.is_superuser:
-            return self.queryset.order_by('-created_at')
-        # Users only see their own payments
-        return self.queryset.filter(broker=self.request.user).order_by('-created_at')
+            return self.queryset.select_related('broker').order_by('-created_at')
+        # Users only see their own payments with broker pre-fetched
+        return self.queryset.filter(broker=self.request.user).select_related('broker').order_by('-created_at')
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def approve(self, request, pk=None):
