@@ -27,9 +27,14 @@ User = get_user_model()
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from rest_framework.views import APIView
+from rest_framework.throttling import AnonRateThrottle
+
+class AuthAttemptThrottle(AnonRateThrottle):
+    scope = 'auth_attempt'
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [AuthAttemptThrottle]
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
@@ -116,6 +121,7 @@ class RegisterView(CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
+    throttle_classes = [AuthAttemptThrottle]
 
 class IsBrokerOrReadOnly(permissions.BasePermission):
     """
