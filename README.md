@@ -28,17 +28,14 @@ graph TD
 Este flujo detalla como se procesa y optimiza una imagen en el backend al subirla, y como se gestiona la consistencia de la cache de Redis reactivamente para que los listados siempre esten actualizados.
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    Broker->>Frontend: Sube datos de propiedad + Imagen (RAW)
-    Frontend->>Backend: POST /api/properties/ (JSON + Multi-part form)
-    Note over Backend: El middleware valida JWT en Cookie HttpOnly
-    Backend->>Backend: Intercepta imagen en save() (Pillow)
-    Backend->>Backend: Convierte a RGB, escala a max 1200x800 y comprime a JPEG (Calidad 75)
-    Backend->>DB: Guarda registro e inserta coordenadas en tabla PostGIS
-    Backend->>Redis: Invalida cache de consultas GET (cache.clear())
-    Backend-->>Frontend: Retorna status 201 Created + GeoJSON de la propiedad
-    Frontend-->>Broker: Muestra propiedad creada y recarga mapa/lista
+graph TD
+    A[Broker sube datos + Imagen RAW] --> B[POST /api/properties/]
+    B --> C[Middleware valida JWT en Cookie HttpOnly]
+    C --> D[Django intercepta imagen en save]
+    D --> E[Pillow escala a 1200x800 e inyecta compresión JPEG]
+    E --> F[PostGIS almacena registro y coordenadas]
+    F --> G[Redis incrementa versión de caché]
+    G --> H[Retorna Status 201 + GeoJSON]
 ```
 
 ### Flujo de Autenticacion Segura mediante JWT con Cookies
@@ -46,14 +43,11 @@ sequenceDiagram
 El sistema de autenticacion prescinde del almacenamiento de JWT en LocalStorage para evitar vulnerabilidades XSS, utilizando en su lugar cookies seguras configuradas desde el backend.
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    User->>Frontend: Ingresa credenciales (Login)
-    Frontend->>Backend: POST /api/token/ (Username / Password)
-    Backend->>Backend: Valida credenciales y genera tokens JWT
-    Backend->>Backend: Configura Cookies: 'access' (HttpOnly, SameSite, Secure) y 'refresh'
-    Backend-->>Frontend: Retorna Status 200 OK (sin tokens en el body de respuesta)
-    Note over Frontend: El estado del usuario se sincroniza llamando a /api/auth/me/
+graph TD
+    A[Usuario ingresa credenciales] --> B[POST /api/token/]
+    B --> C[Django valida y genera tokens JWT]
+    C --> D[Django inyecta cookies HttpOnly y Secure]
+    D --> E[Retorna Status 200 OK y redirige]
 ```
 
 ---
