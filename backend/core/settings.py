@@ -108,10 +108,13 @@ CHANNEL_LAYERS = {
     },
 }
 
+redis_url = os.getenv('REDIS_URL', 'redis://redis:6379/0')
+redis_cache_default = redis_url[:-2] + '/1' if redis_url.endswith('/0') else redis_url
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.getenv('REDIS_CACHE_URL', 'redis://redis:6379/1'),
+        'LOCATION': os.getenv('REDIS_CACHE_URL', redis_cache_default),
     }
 }
 
