@@ -13,6 +13,42 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
+  // Reglas de validación de contraseña
+  const hasMinLength = password.length >= 8;
+  const hasCapitalLetter = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const isNotCommon = password.length > 0 && !['123456', '12345678', 'password', 'qwerty', 'admin', '12345', '123456789', '1234567890'].includes(password.toLowerCase());
+
+  // Calcular fuerza e indicadores visuales
+  const fulfilledRulesCount = [hasMinLength, hasCapitalLetter, hasNumber, hasSpecialChar].filter(Boolean).length;
+  
+  let strengthPercent = 0;
+  let strengthColor = 'bg-red-500/20';
+  let strengthText = 'Sin contraseña';
+
+  if (password.length > 0) {
+    if (!isNotCommon) {
+      strengthPercent = 15;
+      strengthColor = 'bg-red-500';
+      strengthText = 'Contraseña muy fácil / común';
+    } else {
+      strengthPercent = (fulfilledRulesCount / 4) * 100;
+      if (fulfilledRulesCount <= 2) {
+        strengthColor = 'bg-red-500';
+        strengthText = 'Débil';
+      } else if (fulfilledRulesCount === 3) {
+        strengthColor = 'bg-orange-500';
+        strengthText = 'Media';
+      } else {
+        strengthColor = 'bg-green-500';
+        strengthText = 'Segura';
+      }
+    }
+  }
+
+  const isPasswordValid = hasMinLength && hasCapitalLetter && hasNumber && hasSpecialChar && isNotCommon;
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -114,6 +150,49 @@ export default function RegisterPage() {
               className="w-full px-4 py-3.5 rounded-xl border border-border bg-background/50 focus:bg-background focus:ring-2 focus:ring-brand/30 outline-none font-medium transition-all" 
               required
             />
+            {password.length > 0 && (
+              <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                {/* Barra de progreso */}
+                <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-500 ${strengthColor}`} 
+                    style={{ width: `${strengthPercent}%` }}
+                  />
+                </div>
+                {/* Texto de fuerza */}
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-muted">Fuerza:</span>
+                  <span className={
+                    strengthText.includes('fácil') ? 'text-red-500' :
+                    strengthText === 'Débil' ? 'text-red-500' :
+                    strengthText === 'Media' ? 'text-orange-500' : 'text-green-500'
+                  }>{strengthText}</span>
+                </div>
+                {/* Lista de requisitos */}
+                <ul className="space-y-1 text-xs font-bold">
+                  <li className={`flex items-center space-x-1.5 transition-colors ${hasMinLength ? 'text-green-500' : 'text-red-500/80'}`}>
+                    <span>{hasMinLength ? '✓' : '✗'}</span>
+                    <span>Mínimo 8 caracteres</span>
+                  </li>
+                  <li className={`flex items-center space-x-1.5 transition-colors ${hasCapitalLetter ? 'text-green-500' : 'text-red-500/80'}`}>
+                    <span>{hasCapitalLetter ? '✓' : '✗'}</span>
+                    <span>Al menos una mayúscula</span>
+                  </li>
+                  <li className={`flex items-center space-x-1.5 transition-colors ${hasNumber ? 'text-green-500' : 'text-red-500/80'}`}>
+                    <span>{hasNumber ? '✓' : '✗'}</span>
+                    <span>Al menos un número</span>
+                  </li>
+                  <li className={`flex items-center space-x-1.5 transition-colors ${hasSpecialChar ? 'text-green-500' : 'text-red-500/80'}`}>
+                    <span>{hasSpecialChar ? '✓' : '✗'}</span>
+                    <span>Al menos un carácter especial</span>
+                  </li>
+                  <li className={`flex items-center space-x-1.5 transition-colors ${isNotCommon ? 'text-green-500' : 'text-red-500/80'}`}>
+                    <span>{isNotCommon ? '✓' : '✗'}</span>
+                    <span>No es una contraseña común</span>
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2">Tipo de Cuenta</label>
@@ -139,7 +218,15 @@ export default function RegisterPage() {
               />
             </div>
           )}
-          <button type="submit" className="w-full py-4 mt-4 rounded-xl bg-brand text-white font-bold hover:bg-brand-hover transition-all active:scale-95 shadow-lg shadow-brand/20">
+          <button 
+            type="submit" 
+            disabled={password.length > 0 && !isPasswordValid}
+            className={`w-full py-4 mt-4 rounded-xl text-white font-bold transition-all active:scale-95 shadow-lg ${
+              password.length > 0 && !isPasswordValid
+                ? 'bg-brand/40 cursor-not-allowed shadow-none'
+                : 'bg-brand hover:bg-brand-hover shadow-brand/20'
+            }`}
+          >
             Completar Registro
           </button>
         </form>
